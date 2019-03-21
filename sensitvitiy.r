@@ -171,7 +171,7 @@ params_matrix_equi=cbind(params_matrix,delta0_b,delta1_b,delta2_b)
 Equi_incidence = data.frame('Equi_incidence'=rep(NA,z))
 output_matrix_equi = cbind(params_matrix_equi, Equi_incidence) #add incidence column
 
-View(output_matrix_equi)
+#View(output_matrix_equi)
 
 #compute baseline delta
 output_matrix_equi$delta0_b=(output_matrix_equi$cdr0_b*(output_matrix_equi$gamma0+output_matrix_equi$mui0+output_matrix_equi$mu+output_matrix_equi$h)/(1-output_matrix_equi$cdr0_b))*output_matrix_equi$s0
