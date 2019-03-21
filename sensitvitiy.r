@@ -5,9 +5,13 @@ library(ggplot2)
 library(ggpubr)
 require(lhs)
 library(sensitivity)
-#SENSITIVITY ANALYSIS
-#Model Func
-Baseline_model=function(current_timepoint, state_values, parameters)
+
+source("function_tool_kit.R")
+
+# SENSITIVITY ANALYSIS
+
+# Model Func
+Baseline_model <- function(current_timepoint, state_values, parameters)
 {inst
   #creat state variables (local variables)
   S=state_values[1] #fully susceptible 
@@ -16,8 +20,7 @@ Baseline_model=function(current_timepoint, state_values, parameters)
   I0=state_values[4] #infectious non-spreaders
   I1=state_values[5] #infectious spreaders
   I2=state_values[6] #infectious Super-spreaders
-  
-  
+    
   with(
     as.list(parameters), #variable names within parameters can be used
     {
@@ -38,46 +41,30 @@ Baseline_model=function(current_timepoint, state_values, parameters)
   )
 }
 
-
 #Latin hypercube sampling
-
 z <- 100 #choose number of points to simulate
 set.seed(6242015)#random number generator
 lhs<-maximinLHS(z,32) #simulate h= number of simulations, 35=number of parameters
 #To map these points in the unit cube to our parameters, we need minimum and maximum values for each.
 
-a.min=0.58
-a.max=0.58
-b.min=0.31
-b.max=0.31
-c.min=0.11
-c.max=0.11
-alpha.min=0.22
-alpha.max=0.22
+# beginning to shift this code over to being based on lists, to avoid repeated calculations using LHS to sample from a particular window
+param_value_limits <- list(a = list(min = 0.58, max = 0.58),
+                           b = list(min = 0.31, max = 0.31),
+                           c = list(min = 0.11, max = 0.11),
+                           alpha = list(min = 0.22, max = 0.22),
+                           mu = list(min = 0.0133, max = 0.0182),
+                           mui0 = list(min = 0.0167, max = 0.032),
+                           mui1 = list(min = 0.0167, max = 0.032),
+                           mui2 = list(min = 0.109, max = 0.262),
+                           r = list(min = 0.21, max = 0.21),
+                           beta0 = list(min = 0, max = 0),
+                           beta1 = list(min = 6.6, max = 13.2),
+                           beta2 = list(min = 30, max = 60),
+                           epsilon0 = list(min = 0.1779498, max = 0.3177646),
+                           epsilon1 = list(min = 0.0951111, max = 0.1698397),
+                           epsilon2 = list(min = 0.0337491, max = 0.0602657))
 
-mu.min= 0.0133
-mu.max= 0.0182
-mui0.min=0.0167
-mui0.max=0.032
-mui1.min=0.0167
-mui1.max=0.032
-mui2.min=0.109
-mui2.max=0.262
-r.min=0.21
-r.max=0.21
 
-beta0.min<-0
-beta0.max<-0
-beta2.min<-30
-beta2.max<-60
-beta1.min<-6.6
-beta1.max<-13.2
-epsilon0.min<- 0.1779498
-epsilon0.max<-0.3177646
-epsilon1.min<-0.0951111
-epsilon1.max<-0.1698397
-epsilon2.min<-0.0337491
-epsilon2.max<- 0.0602657
 kappa.min<-3.0104625
 kappa.max<-5.1135
 
@@ -119,18 +106,28 @@ p1.max<-0
 p2.min<-0
 p2.max<-0
 
+something <- adjust_lhs_to_range(lhs[, 18], "mu", param_value_limits)
+something
+
 #Now we can generate a “parameter set” by rescaling our simulated latin hypercube sample
 params.set_o <- cbind(
-  a = lhs[,1]*(a.max-a.min)+a.min,
-  b = lhs[,2]*(b.max-b.min)+b.min,
-  c = lhs[,3]*(c.max-c.min)+c.min,
-  alpha = lhs[,4]*(alpha.max-alpha.min)+alpha.min,
-  beta0 = lhs[,5]*(beta0.max-beta0.min)+beta0.min,
-  beta1 = lhs[,6]*(beta1.max-beta1.min)+beta1.min,
-  beta2 = lhs[,7]*(beta2.max-beta2.min)+beta2.min,
-  epsilon0 =lhs[,8]*(epsilon0.max-epsilon0.min)+epsilon0.min,
-  epsilon1 =lhs[,9]*(epsilon1.max-epsilon1.min)+epsilon1.min,
-  epsilon2 =lhs[,10]*(epsilon2.max-epsilon2.min)+epsilon2.min,
+  a = adjust_lhs_to_range(lhs[, 1], "a", param_value_limits),
+  b = adjust_lhs_to_range(lhs[, 2], "b", param_value_limits),
+  c = adjust_lhs_to_range(lhs[, 3], "c", param_value_limits),
+  alpha = adjust_lhs_to_range(lhs[, 4], "alpha", param_value_limits),
+  mu = adjust_lhs_to_range(lhs[, 18], "mu", param_value_limits),
+  mui0 = adjust_lhs_to_range(lhs[, 19], "mui0", param_value_limits),
+  mui1 = adjust_lhs_to_range(lhs[, 20], "mui1", param_value_limits),
+  mui2 = adjust_lhs_to_range(lhs[, 21], "mui2", param_value_limits),
+  r = adjust_lhs_to_range(lhs[, 22], "r", param_value_limits),
+  beta0 = adjust_lhs_to_range(lhs[, 5], "beta0", param_value_limits),
+  beta1 = adjust_lhs_to_range(lhs[, 6], "beta1", param_value_limits),
+  beta2 = adjust_lhs_to_range(lhs[, 7], "beta2", param_value_limits),
+  epsilon0 = adjust_lhs_to_range(lhs[, 8], "epsilon0", param_value_limits),
+  epsilon1 = adjust_lhs_to_range(lhs[, 9], "epsilon1", param_value_limits),
+  epsilon2 = adjust_lhs_to_range(lhs[, 10], "epsilon2", param_value_limits),
+
+
   kappa = lhs[,11]*(kappa.max-kappa.min)+kappa.min,
   gamma0 = lhs[,12]*(gamma0.max-gamma0.min)+gamma0.min,
   gamma1 = lhs[,13]*(gamma1.max-gamma1.min)+gamma1.min,
@@ -138,11 +135,7 @@ params.set_o <- cbind(
   nu0 = lhs[,15]*(nu0.max-nu0.min)+nu0.min,
   nu1 = lhs[,16]*(nu1.max-nu1.min)+nu1.min,
   nu2 = lhs[,17]*(nu2.max-nu2.min)+nu2.min,
-  mu = lhs[,18]*(mu.max-mu.min)+mu.min,
-  mui0 = lhs[,19]*(mui0.max-mui0.min)+mui0.min,
-  mui1 = lhs[,20]*(mui1.max-mui1.min)+mui1.min,
-  mui2 = lhs[,21]*(mui2.max-mui2.min)+mui2.min,
-  r = lhs[,22]*(r.max-r.min)+r.min,
+
   s0 = lhs[,23]*(s0.max-s0.min)+s0.min,
   s1 = lhs[,24]*(s1.max-s1.min)+s1.min,
   s2 = lhs[,25]*(s2.max-s2.min)+s2.min,
@@ -177,7 +170,7 @@ output_matrix_equi = cbind(params_matrix_equi, Equi_incidence) #add incidence co
 output_matrix_equi$delta0_b=(output_matrix_equi$cdr0_b*(output_matrix_equi$gamma0+output_matrix_equi$mui0+output_matrix_equi$mu+output_matrix_equi$h)/(1-output_matrix_equi$cdr0_b))*output_matrix_equi$s0
 output_matrix_equi$delta1_b=(output_matrix_equi$cdr1_b*(output_matrix_equi$gamma1+output_matrix_equi$mui1+output_matrix_equi$mu+output_matrix_equi$j)/(1-output_matrix_equi$cdr1_b))*output_matrix_equi$s1
 output_matrix_equi$delta2_b=(output_matrix_equi$cdr2_b*(output_matrix_equi$gamma2+output_matrix_equi$mui2+output_matrix_equi$mu)/(1-output_matrix_equi$cdr2_b))*output_matrix_equi$s2
-View(output_matrix_equi)
+#View(output_matrix_equi)
 ##Initial values for sub population: 
 A=1 #Fully susceptible hosts
 B=0        #Early latent hosts
@@ -209,7 +202,7 @@ for(i in 1:z){
   
 } 
 
-View(output_matrix_equi) #now we have incidence and each parameters in one matrix
+#View(output_matrix_equi) #now we have incidence and each parameters in one matrix
 
 #######################
 
