@@ -2,7 +2,7 @@
 library(deSolve)
 library(reshape2)
 library(ggplot2)
-library(ggpubr)
+#library(ggpubr)
 require(lhs)
 library(sensitivity)
 
@@ -62,54 +62,27 @@ param_value_limits <- list(a = list(min = 0.58, max = 0.58),
                            beta2 = list(min = 30, max = 60),
                            epsilon0 = list(min = 0.1779498, max = 0.3177646),
                            epsilon1 = list(min = 0.0951111, max = 0.1698397),
-                           epsilon2 = list(min = 0.0337491, max = 0.0602657))
+                           epsilon2 = list(min = 0.0337491, max = 0.0602657),
+                           kappa = list(min = 3.0104625, max = 5.1135),
+                           gamma0 = list(min = 0.265, max = 0.301),
+                           gamma1 = list(min = 0.265, max = 0.301),
+                           gamma2 = list(min = 0.056, max = 0.209),
+                           nu0 = list(min = 0.0005278, max = 0.002330295),
+                           nu1 = list(min = 0.0002821, max = 0.001245502),
+                           nu2 = list(min = 0.0001001, max = 0.0004419525),
+                           cdr0_b = list(min = 0.7, max = 0.7),
+                           cdr1_b = list(min = 0.7, max = 0.7),
+                           cdr2_b = list(min = 0.7, max = 0.7),
+                           s0 = list(min = 0.8, max = 0.8),
+                           s1 = list(min = 0.8, max = 0.8),
+                           s2 = list(min = 0.8, max = 0.8),
+                           h = list(min = 0.0, max = 0.02),
+                           j = list(min = 0.0, max = 0.02),
+                           p1 = list(min = 0, max = 0),
+                           p2 = list(min = 0, max = 0))
 
 
-kappa.min<-3.0104625
-kappa.max<-5.1135
-
-gamma0.min<-0.265
-gamma0.max<-0.301
-gamma1.min<-0.265
-gamma1.max<-0.301
-gamma2.min<-0.056
-gamma2.max<-0.209
-
-nu0.min<-0.0005278
-nu0.max<-0.002330295
-nu1.min<-0.0002821
-nu1.max<-0.001245502
-nu2.min<-0.0001001
-nu2.max<-0.0004419525
-#baseline CDR 0.7
-cdr0_b.min=0.7
-cdr0_b.max=0.7
-cdr1_b.min=0.7
-cdr1_b.max=0.7
-cdr2_b.min=0.7
-cdr2_b.max=0.7
-
-#treatment success rate 
-s0.min=0.8 
-s0.max=0.8
-s1.min=0.8
-s1.max=0.8
-s2.min=0.8
-s2.max=0.8
-
-h.min<-0.0
-h.max<-0.02
-j.min<-0.0
-j.max<-0.02
-p1.min<-0
-p1.max<-0
-p2.min<-0
-p2.max<-0
-
-something <- adjust_lhs_to_range(lhs[, 18], "mu", param_value_limits)
-something
-
-#Now we can generate a “parameter set” by rescaling our simulated latin hypercube sample
+#Now we can generate a ?parameter set? by rescaling our simulated latin hypercube sample
 params.set_o <- cbind(
   a = adjust_lhs_to_range(lhs[, 1], "a", param_value_limits),
   b = adjust_lhs_to_range(lhs[, 2], "b", param_value_limits),
@@ -126,27 +99,24 @@ params.set_o <- cbind(
   epsilon0 = adjust_lhs_to_range(lhs[, 8], "epsilon0", param_value_limits),
   epsilon1 = adjust_lhs_to_range(lhs[, 9], "epsilon1", param_value_limits),
   epsilon2 = adjust_lhs_to_range(lhs[, 10], "epsilon2", param_value_limits),
-
-
-  kappa = lhs[,11]*(kappa.max-kappa.min)+kappa.min,
-  gamma0 = lhs[,12]*(gamma0.max-gamma0.min)+gamma0.min,
-  gamma1 = lhs[,13]*(gamma1.max-gamma1.min)+gamma1.min,
-  gamma2 = lhs[,14]*(gamma2.max-gamma2.min)+gamma2.min,
-  nu0 = lhs[,15]*(nu0.max-nu0.min)+nu0.min,
-  nu1 = lhs[,16]*(nu1.max-nu1.min)+nu1.min,
-  nu2 = lhs[,17]*(nu2.max-nu2.min)+nu2.min,
-
-  s0 = lhs[,23]*(s0.max-s0.min)+s0.min,
-  s1 = lhs[,24]*(s1.max-s1.min)+s1.min,
-  s2 = lhs[,25]*(s2.max-s2.min)+s2.min,
-  cdr0_b= lhs[,26]*(cdr0_b.max-cdr0_b.min)+cdr0_b.min,
-  cdr1_b= lhs[,27]*(cdr1_b.max-cdr1_b.min)+cdr1_b.min,
-  cdr2_b= lhs[,28]*(cdr2_b.max-cdr2_b.min)+cdr2_b.min,
-
-  h = lhs[,29]*(h.max-h.min)+h.min,
-  j = lhs[,30]*(j.max-j.min)+j.min,
-  p1 = lhs[,31]*(p1.max-p1.min)+p1.min,
-  p2 = lhs[,32]*(p2.max-p2.min)+p2.min)
+  kappa = adjust_lhs_to_range(lhs[, 11], "kappa", param_value_limits),
+  gamma0 = adjust_lhs_to_range(lhs[, 12], "gamma0", param_value_limits),
+  gamma1 = adjust_lhs_to_range(lhs[, 13], "gamma1", param_value_limits),
+  gamma2 = adjust_lhs_to_range(lhs[, 14], "gamma2", param_value_limits),
+  nu0 = adjust_lhs_to_range(lhs[, 15], "nu0", param_value_limits),
+  nu1 = adjust_lhs_to_range(lhs[, 16], "nu1", param_value_limits),
+  nu2 = adjust_lhs_to_range(lhs[, 17], "nu2", param_value_limits),
+  cdr0_b = adjust_lhs_to_range(lhs[, 18], "cdr0_b", param_value_limits),
+  cdr1_b = adjust_lhs_to_range(lhs[, 19], "cdr1_b", param_value_limits),
+  cdr2_b = adjust_lhs_to_range(lhs[, 20], "cdr2_b", param_value_limits),
+  s0 = adjust_lhs_to_range(lhs[, 23], "s0", param_value_limits),
+  s1 = adjust_lhs_to_range(lhs[, 24], "s1", param_value_limits),
+  s2 = adjust_lhs_to_range(lhs[, 25], "s2", param_value_limits),
+  h = adjust_lhs_to_range(lhs[, 26], "h", param_value_limits),
+  j = adjust_lhs_to_range(lhs[, 27], "j", param_value_limits),
+  p1 = adjust_lhs_to_range(lhs[, 28], "p1", param_value_limits),
+  p2 = adjust_lhs_to_range(lhs[, 29], "p2", param_value_limits))
+  
 
 #View(params.set_o)
 #class(params.set_o)
