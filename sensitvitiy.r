@@ -137,9 +137,22 @@ output_matrix_equi = cbind(params_matrix_equi, Equi_incidence) #add incidence co
 #View(output_matrix_equi)
 
 #compute baseline delta
-output_matrix_equi$delta0_b=(output_matrix_equi$cdr0_b*(output_matrix_equi$gamma0+output_matrix_equi$mui0+output_matrix_equi$mu+output_matrix_equi$h)/(1-output_matrix_equi$cdr0_b))*output_matrix_equi$s0
-output_matrix_equi$delta1_b=(output_matrix_equi$cdr1_b*(output_matrix_equi$gamma1+output_matrix_equi$mui1+output_matrix_equi$mu+output_matrix_equi$j)/(1-output_matrix_equi$cdr1_b))*output_matrix_equi$s1
-output_matrix_equi$delta2_b=(output_matrix_equi$cdr2_b*(output_matrix_equi$gamma2+output_matrix_equi$mui2+output_matrix_equi$mu)/(1-output_matrix_equi$cdr2_b))*output_matrix_equi$s2
+output_matrix_equi$delta0_b <-
+  find_delta_from_cdr(output_matrix_equi$cdr0_b, 
+                      output_matrix_equi$gamma0 + output_matrix_equi$mui0 +
+                        output_matrix_equi$mu + output_matrix_equi$h, 
+                      output_matrix_equi$s0)
+output_matrix_equi$delta1_b <-
+  find_delta_from_cdr(output_matrix_equi$cdr1_b,
+                      output_matrix_equi$gamma1 + output_matrix_equi$mui1 + 
+                        output_matrix_equi$mu + output_matrix_equi$j, 
+                      output_matrix_equi$s1)
+output_matrix_equi$delta2_b <-
+  find_delta_from_cdr(output_matrix_equi$cdr2_b,
+                      output_matrix_equi$gamma2 + output_matrix_equi$mui2 + 
+                        output_matrix_equi$mu,
+                      output_matrix_equi$s2)
+
 #View(output_matrix_equi)
 ##Initial values for sub population: 
 A=1 #Fully susceptible hosts
