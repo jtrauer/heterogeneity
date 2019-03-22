@@ -14,7 +14,8 @@ source("function_tool_kit.R")
 
 # Model Func
 Baseline_model <- function(current_timepoint, state_values, parameters)
-  {inst
+  {inst #what is "inst" James?Error in func(time, state, parms, ...) :
+      #object 'inst' not found
   #creat state variables (local variables)
   S=state_values[1] #fully susceptible 
   L1=state_values[2] #early latency
