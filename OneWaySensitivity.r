@@ -84,7 +84,7 @@ gamma1<-(log(1-P_gamma1)/(-T_I))
 gamma2<-(log(1-P_gamma2)/(-T_I))
 
 #baseline CDR 0.7
-cdr_b=0.7
+cdr_b=0.8
 
 
 
