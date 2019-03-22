@@ -2,7 +2,7 @@
 library(deSolve)
 library(reshape2)
 library(ggplot2)
-library(ggpubr)
+#library(ggpubr)
 library(lhs)
 library(sensitivity)
 
@@ -74,7 +74,7 @@ param_value_limits <- list(N= list(min = 1, max = 1),
                            p2 = list(min = 0, max = 0))
 
 # Latin hypercube sampling
-z <- 1000 # choose number of points to simulate
+z <- 2 # choose number of points to simulate
 set.seed(6242015) # random number generator
 # To map these points in the unit cube to our parameters, we need minimum and maximum values for each.
 
