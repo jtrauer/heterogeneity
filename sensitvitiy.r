@@ -2,7 +2,7 @@
 library(deSolve)
 library(reshape2)
 library(ggplot2)
-#library(ggpubr)
+library(ggpubr)
 require(lhs)
 
 
@@ -14,7 +14,7 @@ source("function_tool_kit.R")
 
 # Model Func
 Baseline_model <- function(current_timepoint, state_values, parameters)
-  {inst #what is "inst" James?Error in func(time, state, parms, ...) :
+  {#inst #what is "inst" James?Error in func(time, state, parms, ...) :
       #object 'inst' not found
   #creat state variables (local variables)
   S=state_values[1] #fully susceptible 
@@ -51,7 +51,7 @@ T_I=3#Time in I in years
 
 
 #Latin hypercube sampling
-z <- 10 #choose number of points to simulate
+z <- 1000 #choose number of points to simulate
 set.seed(6242015)#random number generator
 lhs<-maximinLHS(z,24) #simulate h= number of simulations, 35=number of parameters
 #To map these points in the unit cube to our parameters, we need minimum and maximum values for each.
@@ -63,26 +63,20 @@ param_value_limits <- list(N= list(min = 1, max = 1),
                            c = list(min = 0.11, max = 0.11),
                            alpha = list(min = 0.22, max = 0.22),
                            mu = list(min = 0.0133, max = 0.0182),
-                           
                            P_mui0 = list(min = 0.049, max = 0.091),
                            P_mui1 = list(min = 0.049, max = 0.091),
                            P_mui2 = list(min = 0.279, max = 0.544),
-                           #here
                            r = list(min = 0.21, max = 0.21),
                            beta0 = list(min = 0, max = 0),
                            beta2 = list(min = 30, max = 60),
                            P_epsilon = list(min = 0.074, max = 0.128),
                            P_kappa = list(min = 0.54, max = 0.721),
-                           
                            P_gamma0 = list(min = 0.548, max = 0.595),
-                           P_gamma1 = list(min = 0.548, max = 0.548),
+                           P_gamma1 = list(min = 0.548, max = 0.595),
                            P_gamma2 = list(min = 0.155, max = 0.466),
                            P_nu = list(min = 0.018, max = 0.077),
-                          
                            cdr_b = list(min = 0.5, max = 0.8),#baseline CDR
-                           
-                           s = list(min = 0.8, max = 0.8),#treatment success
-                           
+                           s = list(min = 0.8, max = 0.8),#Rx success
                            P_h = list(min = 0.0, max = 0.058),
                            P_j = list(min = 0.0, max = 0.058),
                            p1 = list(min = 0, max = 0),
@@ -101,20 +95,15 @@ params.set_o <- cbind(
   P_mui2 = adjust_lhs_to_range(lhs[, 8], "P_mui2", param_value_limits),
   r = adjust_lhs_to_range(lhs[, 9], "r", param_value_limits),
   beta0 = adjust_lhs_to_range(lhs[, 10], "beta0", param_value_limits),
-  
   beta2 = adjust_lhs_to_range(lhs[, 11], "beta2", param_value_limits),
   P_epsilon = adjust_lhs_to_range(lhs[, 12], "P_epsilon", param_value_limits),
-  
   P_kappa = adjust_lhs_to_range(lhs[, 13], "P_kappa", param_value_limits),
   P_gamma0 = adjust_lhs_to_range(lhs[, 14], "P_gamma0", param_value_limits),
   P_gamma1 = adjust_lhs_to_range(lhs[, 15], "P_gamma1", param_value_limits),
   P_gamma2 = adjust_lhs_to_range(lhs[, 16], "P_gamma2", param_value_limits),
   P_nu = adjust_lhs_to_range(lhs[, 17], "P_nu", param_value_limits),
-  
   cdr_b = adjust_lhs_to_range(lhs[, 18], "cdr_b", param_value_limits),
- 
   s = adjust_lhs_to_range(lhs[, 19], "s", param_value_limits),
-  
   P_h = adjust_lhs_to_range(lhs[, 20], "P_h", param_value_limits),
   P_j = adjust_lhs_to_range(lhs[, 21], "P_j", param_value_limits),
   p1 = adjust_lhs_to_range(lhs[, 22], "p1", param_value_limits),
@@ -240,118 +229,213 @@ for(i in 1:z){
 
 #View(output_matrix_equi) #now we have incidence and each parameters in one matrix
 
-#######################
+#save output as csv
 
-write.csv(x=output_matrix_equi,file='..//Enchik.com/output_matrix_equi.csv')
+write.csv(x=output_matrix_equi,file='..//heterogeneity/output/output_matrix_equi.csv')
 
-#creat matrix to save whole info
+#test significance of correlation, selcet parameters from csv manually 
+Test_corelation<-read.csv(file.choose())#open csv with selected params and incidence
+bonferroni.alpha <- 0.05/14 #14 parametrs
 
-#which parameter affects more,inspecting the partial correlation
-#Partial rank correlations can be computed using the pcc function in the R package sensitivity 
-#install.packages('sensitivity')
-
-bonferroni.alpha <- 0.05/35
-
-prcc <- pcc(output_matrix_equi[,1:35], output_matrix_equi[,36], nboot = 1000, rank=TRUE, conf=1-bonferroni.alpha)
+prcc <- pcc(Test_corelation[,1:14], Test_corelation[,15], nboot = 1000, rank=TRUE, conf=1-bonferroni.alpha)
 save(prcc, file='prcc.Rdata')
-
-#We can view a table of the resulting partial correlation coefficients. if none of the (penalized)
-#confidence intervals contains zero, we conclude that all are significant and produce a plot showing their
-#relative magnitudes.
-
 load('prcc.Rdata')
 summary <- print(prcc)
 Corl=data.frame(summary) 
 View(Corl)
-
-write.csv(x=Corl,file='..//Enchik.com//corl.csv')
-#plote the partial corelation coeeficient
-
 par(mar=c(9,4,4,2)+0.1)
 plot(Corl$original, main='Partial rank correlation coefficients', ylim=c(-1,1),
-     xlab='', ylab='Coefficient',
+     xlab='', ylab='Coefficient',pch=19,
      axes=FALSE)
 axis(2)
-axis(1, at=seq(1:35), labels=row.names(Corl), las=2)
+axis(1, at=seq(1:14), labels=row.names(Corl), las=2)
 mtext(text='Parameter', side=1, line=4.5)
 box()
-for(i in 1:35) lines(c(i,i),c(Corl[i,4], Corl[i,5]))
+for(i in 1:14) lines(c(i,i),c(Corl[i,4], Corl[i,5]))
 abline(h=0)
-#tornado plot
+
+#ggplot for parameter space Vs equilibrium incidence
+#significan colour= coral4, non-significant chocolate1 
+#CDR, significant
+
+e_cdr_b=data.frame(cbind(output_matrix_equi$cdr_b, output_matrix_equi$Equi_incidence))
+
+e_cdr_b_g=melt(e_cdr_b,id='X1')
+e_cdr_b_gp<-ggplot(e_cdr_b_g, aes(x=X1, y=value)) + 
+  geom_point(color="coral4")+
+  #geom_smooth(method = 'lm',se=FALSE,col='darkred')+
+  
+  xlab("CDR")+
+  #theme(plot.margin=margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))+
+  ylab("")
+e_cdr_b_gp
+
+#nu
+e_nu=data.frame(cbind(output_matrix_equi$P_nu, output_matrix_equi$Equi_incidence))
+#View(e_nu)
+e_nu_g=melt(e_nu,id='X1')
+e_nu_gp<-ggplot(e_nu_g, aes(x=X1, y=value)) + 
+  geom_point(color="coral4")+
+  #geom_smooth(method = 'lm',se=FALSE,col='darkred')+
+  
+  xlab(expression(nu))+
+  #theme(plot.margin=margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))+
+  ylab("")
+e_nu_gp
+#kappa
+e_kappa=data.frame(cbind(output_matrix_equi$P_kappa, output_matrix_equi$Equi_incidence))
+e_kappa_g=melt(e_kappa,id='X1')
+e_kappa_gp<-ggplot(e_kappa_g, aes(x=X1, y=value)) + 
+  geom_point(color="coral4")+
+  #geom_smooth(method = lm,se=FALSE,col='darkred')+
+  xlab(expression(kappa))+
+  #theme(plot.margin=margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))+
+  ylab("")
+e_kappa_gp 
+
+#beta2
+
+e_beta2=data.frame(cbind(output_matrix_equi$beta2,output_matrix_equi$Equi_incidence))
+e_beta2_g=melt(e_beta2,id='X1')
+e_beta2_gp<-ggplot(e_beta2_g, aes(x=X1, y=value)) + 
+  geom_point(color="coral4")+
+  #geom_smooth(method = lm,se=FALSE,col='darkred')+
+  
+  xlab(expression(beta))+
+  #theme(plot.margin=margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))+
+  ylab("")
+e_beta2_gp
+#epsiolon
+e_epsilon=data.frame(cbind(output_matrix_equi$P_epsilon,output_matrix_equi$Equi_incidence))
+e_epsilon_g=melt(e_epsilon,id='X1')
+e_epsilon_gp<-ggplot(e_epsilon_g, aes(x=X1, y=value)) + 
+  geom_point(color="coral4")+
+  #geom_smooth(method = lm,se=FALSE,col='darkred')+
+  
+  xlab(expression(epsilon))+
+  #theme(plot.margin=margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))+
+  ylab("")
+e_epsilon_gp
+
+#mu
+e_mu=data.frame(cbind(output_matrix_equi$mu,output_matrix_equi$Equi_incidence))
+
+e_mu_g=melt(e_mu,id='X1')
+e_mu_gp<-ggplot(e_mu_g, aes(x=X1, y=value)) + 
+  geom_point(color="coral4")+
+  #geom_smooth(method = lm,se=FALSE,col='darkred')+
+  
+  xlab(expression(mu))+
+  #theme(plot.margin=margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))+
+  ylab("")
+e_mu_gp
+
+#gamma2
+e_gamma2=data.frame(cbind(output_matrix_equi$P_gamma2,output_matrix_equi$Equi_incidence))
+e_gamma2_g=melt(e_gamma2,id='X1')
+e_gamma2_gp<-ggplot(e_gamma2_g, aes(x=X1, y=value)) + 
+  geom_point(color="coral4")+
+  #geom_smooth(method = lm,se=FALSE,col='darkred')+
+  
+  xlab(expression(gamma[2]))+
+  #theme(plot.margin=margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))+
+  ylab("")
+e_gamma2_gp
+#gamma1
+e_gamma1=data.frame(cbind(output_matrix_equi$P_gamma1,output_matrix_equi$Equi_incidence))
+
+e_gamma1_g=melt(e_gamma1,id='X1')
+e_gamma1_gp<-ggplot(e_gamma1_g, aes(x=X1, y=value)) + 
+  geom_point(color="chocolate1")+
+  #geom_smooth(method = lm,se=FALSE,col='darkred')+
+  
+  xlab(expression(gamma[1]))+
+  #theme(plot.margin=margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))+
+  ylab("")
+e_gamma1_gp
+
+#gamma0
+e_gamma0=data.frame(cbind(output_matrix_equi$P_gamma0,output_matrix_equi$Equi_incidence))
+e_gamma0_g=melt(e_gamma0,id='X1')
+e_gamma0_gp<-ggplot(e_gamma0_g, aes(x=X1, y=value)) + 
+  geom_point(color="chocolate1")+
+  #geom_smooth(method = lm,se=FALSE,col='darkred')+
+  
+  xlab(expression(gamma[0]))+
+  #theme(plot.margin=margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))+
+  ylab("")
+e_gamma0_gp
+#mui2
+e_mui2=data.frame(cbind(output_matrix_equi$P_mui2,output_matrix_equi$Equi_incidence))
+e_mui2_g=melt(e_mui2,id='X1')
+e_mui2_gp<-ggplot(e_mui2_g, aes(x=X1, y=value)) + 
+  geom_point(color="coral4")+
+  #geom_smooth(method = lm,se=FALSE,col='darkred')+
+  
+  xlab(expression(mu[i2]))+
+  #theme(plot.margin=margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))+
+  ylab("")
+e_mui2_gp
+
+#mui1
+e_mui1=data.frame(cbind(output_matrix_equi$P_mui1,output_matrix_equi$Equi_incidence))
+
+e_mui1_g=melt(e_mui1,id='X1')
+e_mui1_gp<-ggplot(e_mui1_g, aes(x=X1, y=value)) + 
+  geom_point(color="chocolate1")+
+  #geom_smooth(method = lm,se=FALSE,col='darkred')+
+  
+  xlab(expression(mu[i1]))+
+  #theme(plot.margin=margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))+
+  ylab("")
+e_mui1_gp
+#mui0
+e_mui0=data.frame(cbind(output_matrix_equi$P_mui0,output_matrix_equi$Equi_incidence))
+e_mui0_g=melt(e_mui0,id='X1')
+e_mui0_gp<-ggplot(e_mui0_g, aes(x=X1, y=value)) + 
+  geom_point(color="chocolate1")+
+  #geom_smooth(method = lm,se=FALSE,col='darkred')+
+  
+  xlab(expression(mu[i0]))+
+  #theme(plot.margin=margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))+
+  ylab("")
+e_mui0_gp
+#h
+e_h=data.frame(cbind(output_matrix_equi$P_h,output_matrix_equi$Equi_incidence))
+e_h_g=melt(e_h,id='X1')
+e_h_gp<-ggplot(e_h_g, aes(x=X1, y=value)) + 
+  geom_point(color="chocolate1")+
+  #geom_smooth(method = lm,se=FALSE,col='darkred')+
+  
+  xlab("h")+
+  #theme(plot.margin=margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))+
+  ylab("")
+e_h_gp
+
+#j
+e_j=data.frame(cbind(output_matrix_equi$P_j,output_matrix_equi$Equi_incidence))
+e_j_g=melt(e_j,id='X1')
+e_j_gp<-ggplot(e_j_g, aes(x=X1, y=value)) + 
+  geom_point(color="chocolate1")+
+  #geom_smooth(method = lm,se=FALSE,col='darkred')+
+  xlab("j")+
+ # theme(plot.margin=margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))+
+  ylab("")
+e_j_gp
+
+GG<-ggarrange(e_cdr_b_gp,e_nu_gp,e_beta2_gp,e_kappa_gp,
+              e_epsilon_gp,e_gamma2_gp,e_mui2_gp,e_mu_gp,
+              e_mui0_gp,e_mui1_gp,e_gamma0_gp,e_gamma1_gp,
+              e_j_gp,e_h_gp,
+              ncol=4, nrow=4, common.legend = TRUE,
+              legend="bottom")
+
+annotate_figure(GG,left = text_grob("Equilibrium incidence per 100,000popn",rot = 90))
+#
 
 
-#We can plot each simulated value as a point
-par(mfrow=c(4,3))
-#plot(output_matrix$beta0, output_matrix$incidence, type = 'p' ,lwd=2,pch=19, cex=0.9, col='blue',
-# xlab='beta0',
-#ylab='Incidence',main = 'PRCC= 0.017')
 
-plot(output_matrix_equi$nu2, output_matrix_equi$Equi_incidence, type = 'p' ,lwd=0.8,pch=19, cex=0.57, col='blue',
-     xlab=expression(nu2),
-     ylab='Equilibrium incidence',main = 'PRCC= 0.8456')
-plot(output_matrix_equi$beta2, output_matrix_equi$Equi_incidence, type = 'p' ,lwd=.8,pch=19, cex=0.7, col='blue',
-     xlab=expression(beta2),
-     ylab='Equilibrium incidence',main = 'PRCC= 0.8332')
-plot(output_matrix_equi$nu1, output_matrix_equi$Equi_incidence, type = 'p' ,lwd=.8,pch=19, cex=0.7, col='blue',
-     xlab=expression(nu1),
-     ylab='Equilibrium incidence',main = 'PRCC= 0.8262')
-plot(output_matrix_equi$kappa, output_matrix_equi$Equi_incidence, type = 'p' ,lwd=.8,pch=19, cex=0.7, col='blue',
-     xlab=expression(kappa),
-     ylab='Equilibrium incidence',main = 'PRCC= -0.8178')
 
-plot(output_matrix_equi$nu0, output_matrix_equi$Equi_incidence, type = 'p' ,lwd=.8,pch=19, cex=0.7, col='blue',
-     xlab=expression(nu0),
-     ylab='Equilibrium incidence',main = 'PRCC= 0.7070')
-
-plot(output_matrix_equi$beta1, output_matrix_equi$Equi_incidence, type = 'p' ,lwd=.8,pch=19, cex=0.7, col='blue',
-     xlab='beta1',
-     ylab='Equilibrium incidence',main = 'PRCC= 0.6678')
-
-plot(output_matrix_equi$epsilon2, output_matrix_equi$Equi_incidence, type = 'p' ,lwd=.8,pch=19, cex=0.7, col='blue',
-     xlab=expression(epsilon2),
-     ylab='Equilibrium incidence',main = 'PRCC= 0.016')
-
-plot(output_matrix_equi$epsilon1, output_matrix_equi$Equi_incidence, type = 'p' ,lwd=.8,pch=19, cex=0.7, col='blue',
-     xlab=expression(epsilon1),
-     ylab='Equilibrium incidence',main = 'PRCC= 0.5039')
-
-plot(output_matrix_equi$epsilon0, output_matrix_equi$Equi_incidence, type = 'p' ,lwd=0.8,pch=19, cex=0.7, col='blue',
-     xlab=expression(epsilon0),
-     ylab='Equilibrium incidence',main = 'PRCC= 0.32084')
-
-plot(output_matrix_equi$mu, output_matrix_equi$Equi_incidence, type = 'p' ,lwd=0.8,pch=19, cex=0.7, col='blue',
-     xlab=expression(mu),
-     ylab='Equilibrium incidence',main = 'PRCC= -0.1620')
-
-plot(output_matrix_equi$gamma2, output_matrix_equi$Equi_incidence, type = 'p' ,lwd=0.8,pch=19, cex=0.7, col='blue',
-     xlab=expression(gamma2),
-     ylab='Equilibrium incidence',main = 'PRCC= -0.1367')
-
-plot(output_matrix_equi$mui2, output_matrix_equi$Equi_incidence, type = 'p' ,lwd=0.8,pch=19, cex=0.7, col='blue',
-     xlab=expression(mui2),
-     ylab='Equilibrium incidence',main = 'PRCC= -0.1292')
-
-plot(output_matrix_equi$mui0, output_matrix_equi$Equi_incidence, type = 'p' ,lwd=0.8,pch=19, cex=0.7, col='coral4',
-     xlab=expression(mui0),
-     ylab='Equilibrium incidence',main = 'PRCC= -0.0718')
-
-plot(output_matrix_equi$mui1, output_matrix_equi$Equi_incidence, type = 'p' ,lwd=0.8,pch=19, cex=0.7, col='coral4',
-     xlab=expression(mui1),
-     ylab='Equilibrium incidence',main = 'PRCC= -0.0612')
-plot(output_matrix_equi$gamma0, output_matrix_equi$Equi_incidence, type = 'p' ,lwd=0.8,pch=19, cex=0.7, col='coral4',
-     xlab=expression(gamma0),
-     ylab='Equilibrium incidence',main = 'PRCC= -0.0393')
-
-plot(output_matrix_equi$gamma1, output_matrix_equi$Equi_incidence, type = 'p' ,lwd=0.8,pch=19, cex=0.7, col='coral4',
-     xlab=expression(gamma1),
-     ylab='Equilibrium incidence',main = 'PRCC= -0.0269')
-plot(output_matrix_equi$h, output_matrix_equi$Equi_incidence, type = 'p' ,lwd=0.8,pch=19, cex=0.7, col='coral4',
-     xlab=expression(h),
-     ylab='Equilibrium incidence',main = 'PRCC= -0.0144')
-
-plot(output_matrix_equi$j, output_matrix_equi$Equi_incidence, type = 'p' ,lwd=0.8,pch=19, cex=0.7, col='coral4',
-     xlab=expression(j),
-     ylab='Equilibrium incidence',main = 'PRCC= -0.0037')
 
 
 
