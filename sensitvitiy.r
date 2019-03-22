@@ -80,37 +80,19 @@ set.seed(6242015) # random number generator
 
 lhs <- maximinLHS(z, length(param_value_limits)) # simulate h= number of simulations
 
-#Now we can generate a ?parameter set? by rescaling our simulated latin hypercube sample
-params.set_o <- cbind(
-  a = adjust_lhs_to_range(lhs[, 1], "a", param_value_limits),
-  b = adjust_lhs_to_range(lhs[, 2], "b", param_value_limits),
-  c = adjust_lhs_to_range(lhs[, 3], "c", param_value_limits),
-  alpha = adjust_lhs_to_range(lhs[, 4], "alpha", param_value_limits),
-  mu = adjust_lhs_to_range(lhs[, 5], "mu", param_value_limits),
-  P_mui0 = adjust_lhs_to_range(lhs[, 6], "P_mui0", param_value_limits),
-  P_mui1 = adjust_lhs_to_range(lhs[, 7], "P_mui1", param_value_limits),
-  P_mui2 = adjust_lhs_to_range(lhs[, 8], "P_mui2", param_value_limits),
-  r = adjust_lhs_to_range(lhs[, 9], "r", param_value_limits),
-  beta0 = adjust_lhs_to_range(lhs[, 10], "beta0", param_value_limits),
-  beta2 = adjust_lhs_to_range(lhs[, 11], "beta2", param_value_limits),
-  P_epsilon = adjust_lhs_to_range(lhs[, 12], "P_epsilon", param_value_limits),
-  P_kappa = adjust_lhs_to_range(lhs[, 13], "P_kappa", param_value_limits),
-  P_gamma0 = adjust_lhs_to_range(lhs[, 14], "P_gamma0", param_value_limits),
-  P_gamma1 = adjust_lhs_to_range(lhs[, 15], "P_gamma1", param_value_limits),
-  P_gamma2 = adjust_lhs_to_range(lhs[, 16], "P_gamma2", param_value_limits),
-  P_nu = adjust_lhs_to_range(lhs[, 17], "P_nu", param_value_limits),
-  cdr_b = adjust_lhs_to_range(lhs[, 18], "cdr_b", param_value_limits),
-  s = adjust_lhs_to_range(lhs[, 19], "s", param_value_limits),
-  P_h = adjust_lhs_to_range(lhs[, 20], "P_h", param_value_limits),
-  P_j = adjust_lhs_to_range(lhs[, 21], "P_j", param_value_limits),
-  p1 = adjust_lhs_to_range(lhs[, 22], "p1", param_value_limits),
-  p2 = adjust_lhs_to_range(lhs[, 23], "p2", param_value_limits),
-  N= adjust_lhs_to_range(lhs[, 24], "N", param_value_limits))
+# Initialise empty data frame with correct number of rows to store parameter values
+params_matrix <- data.frame(matrix(NA, nrow = z, ncol = 0))
+
+# Populate the parameter data frame sequentially by column from lhs sampling
+parameter_names <- names(param_value_limits)
+for (parameter in seq(length(parameter_names))) {
+  param_name <- parameter_names[parameter]
+  params_matrix[param_name] <- 
+    adjust_lhs_to_range(lhs[, parameter], param_name, param_value_limits)
+}
 
 View(params.set_o)
 
-# create matrix to save whole info
-params_matrix = data.frame(params.set_o)
 # add colums for parameters 
 beta1 = data.frame('beta1'=rep(NA,z))
 
