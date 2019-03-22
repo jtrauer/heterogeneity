@@ -3,9 +3,7 @@ library(deSolve)
 library(reshape2)
 library(ggplot2)
 library(ggpubr)
-require(lhs)
-
-
+library(lhs)
 library(sensitivity)
 
 source("function_tool_kit.R")
@@ -16,7 +14,7 @@ source("function_tool_kit.R")
 Baseline_model <- function(current_timepoint, state_values, parameters)
   {#inst #what is "inst" James?Error in func(time, state, parms, ...) :
       #object 'inst' not found
-  #creat state variables (local variables)
+  # create state variables (local variables)
   S=state_values[1] #fully susceptible 
   L1=state_values[2] #early latency
   L2=state_values[3] #late latency
@@ -24,7 +22,6 @@ Baseline_model <- function(current_timepoint, state_values, parameters)
   I1=state_values[5] #infectious spreaders
   I2=state_values[6] #infectious Super-spreaders
   
-    
   with(
     as.list(parameters), #variable names within parameters can be used
     {
@@ -44,17 +41,11 @@ Baseline_model <- function(current_timepoint, state_values, parameters)
     }
   )
 }
+
 # Time in each compartment
 T_L1=1/4#time in L1 in years
 T_L2=20#time in L2 in years
 T_I=3#Time in I in years
-
-
-#Latin hypercube sampling
-z <- 1000 #choose number of points to simulate
-set.seed(6242015)#random number generator
-lhs<-maximinLHS(z,24) #simulate h= number of simulations, 35=number of parameters
-#To map these points in the unit cube to our parameters, we need minimum and maximum values for each.
 
 # beginning to shift this code over to being based on lists, to avoid repeated calculations using LHS to sample from a particular window
 param_value_limits <- list(N= list(min = 1, max = 1),
@@ -82,6 +73,12 @@ param_value_limits <- list(N= list(min = 1, max = 1),
                            p1 = list(min = 0, max = 0),
                            p2 = list(min = 0, max = 0))
 
+# Latin hypercube sampling
+z <- 1000 # choose number of points to simulate
+set.seed(6242015) # random number generator
+# To map these points in the unit cube to our parameters, we need minimum and maximum values for each.
+
+lhs <- maximinLHS(z, length(param_value_limits)) # simulate h= number of simulations
 
 #Now we can generate a ?parameter set? by rescaling our simulated latin hypercube sample
 params.set_o <- cbind(
@@ -112,10 +109,9 @@ params.set_o <- cbind(
 
 View(params.set_o)
 
-
-#creat matrix to save whole info
+# create matrix to save whole info
 params_matrix = data.frame(params.set_o)
-#add colums for parameters 
+# add colums for parameters 
 beta1 = data.frame('beta1'=rep(NA,z))
 
 epsilon0 = data.frame('epsilon0'=rep(NA,z))
@@ -138,7 +134,8 @@ gamma2 = data.frame('gamma2'=rep(NA,z))
 
 h = data.frame('h'=rep(NA,z))
 j = data.frame('j'=rep(NA,z))
-#add colums for delta base line
+
+# add colums for delta base line
 delta0_b = data.frame('delta0_b'=rep(NA,z))
 delta1_b = data.frame('delta1_b'=rep(NA,z))
 delta2_b = data.frame('delta2_b'=rep(NA,z))
@@ -147,7 +144,8 @@ params_matrix_equi=cbind(params_matrix,beta1,epsilon0,epsilon1,epsilon2,
                          mui0,mui1,mui2,kappa, nu0,nu1,nu2,gamma0,gamma1,gamma2,h,j,
                          delta0_b,delta1_b,delta2_b)
 View(params_matrix_equi)
-#creat columns for incidences
+
+# create columns for incidences
 Equi_incidence = data.frame('Equi_incidence'=rep(NA,z))
 output_matrix_equi = cbind(params_matrix_equi, Equi_incidence) #add incidence column
 
@@ -193,18 +191,17 @@ output_matrix_equi$delta2_b <-
                       output_matrix_equi$s)
 
 View(output_matrix_equi)
-##Initial values for sub population: 
+## Initial values for sub population: 
 a=0.58 #proportion for I0
-b=0.31#proportion for I1
-c=0.11#proportion for I2
+b=0.31 #proportion for I1
+c=0.11 #proportion for I2
 A=1 #Fully susceptible hosts
-B=0        #Early latent hosts
-C=0        #Late latent hosts
-D=1e-6*a    #active TB hosts proportion of extrapulmonary 15% of all infectious 
+B=0 #Early latent hosts
+C=0 #Late latent hosts
+D=1e-6*a #active TB hosts proportion of extrapulmonary 15% of all infectious 
 E=1e-6*b # active TB Normal spreaders
 F=1e-6*c # active TB Super-spreader 10% of TB patients are super-spreaders
 G=0 # diagnosed 
-
 
 #View(output_matrix_equi)
 for(i in 1:z){
