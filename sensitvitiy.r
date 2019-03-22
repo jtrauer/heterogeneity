@@ -14,7 +14,7 @@ source("function_tool_kit.R")
 
 # Model Func
 Baseline_model <- function(current_timepoint, state_values, parameters)
-{inst
+  {inst
   #creat state variables (local variables)
   S=state_values[1] #fully susceptible 
   L1=state_values[2] #early latency
@@ -22,6 +22,7 @@ Baseline_model <- function(current_timepoint, state_values, parameters)
   I0=state_values[4] #infectious non-spreaders
   I1=state_values[5] #infectious spreaders
   I2=state_values[6] #infectious Super-spreaders
+  
     
   with(
     as.list(parameters), #variable names within parameters can be used
@@ -42,44 +43,47 @@ Baseline_model <- function(current_timepoint, state_values, parameters)
     }
   )
 }
+# Time in each compartment
+T_L1=1/4#time in L1 in years
+T_L2=20#time in L2 in years
+T_I=3#Time in I in years
+
 
 #Latin hypercube sampling
-z <- 100 #choose number of points to simulate
+z <- 10 #choose number of points to simulate
 set.seed(6242015)#random number generator
-lhs<-maximinLHS(z,32) #simulate h= number of simulations, 35=number of parameters
+lhs<-maximinLHS(z,24) #simulate h= number of simulations, 35=number of parameters
 #To map these points in the unit cube to our parameters, we need minimum and maximum values for each.
 
 # beginning to shift this code over to being based on lists, to avoid repeated calculations using LHS to sample from a particular window
-param_value_limits <- list(a = list(min = 0.58, max = 0.58),
+param_value_limits <- list(N= list(min = 1, max = 1),
+                           a = list(min = 0.58, max = 0.58),
                            b = list(min = 0.31, max = 0.31),
                            c = list(min = 0.11, max = 0.11),
                            alpha = list(min = 0.22, max = 0.22),
                            mu = list(min = 0.0133, max = 0.0182),
-                           mui0 = list(min = 0.0167, max = 0.032),
-                           mui1 = list(min = 0.0167, max = 0.032),
-                           mui2 = list(min = 0.109, max = 0.262),
+                           
+                           P_mui0 = list(min = 0.049, max = 0.091),
+                           P_mui1 = list(min = 0.049, max = 0.091),
+                           P_mui2 = list(min = 0.279, max = 0.544),
+                           #here
                            r = list(min = 0.21, max = 0.21),
                            beta0 = list(min = 0, max = 0),
-                           beta1 = list(min = 6.6, max = 13.2),
                            beta2 = list(min = 30, max = 60),
-                           epsilon0 = list(min = 0.1779498, max = 0.3177646),
-                           epsilon1 = list(min = 0.0951111, max = 0.1698397),
-                           epsilon2 = list(min = 0.0337491, max = 0.0602657),
-                           kappa = list(min = 3.0104625, max = 5.1135),
-                           gamma0 = list(min = 0.265, max = 0.301),
-                           gamma1 = list(min = 0.265, max = 0.301),
-                           gamma2 = list(min = 0.056, max = 0.209),
-                           nu0 = list(min = 0.0005278, max = 0.002330295),
-                           nu1 = list(min = 0.0002821, max = 0.001245502),
-                           nu2 = list(min = 0.0001001, max = 0.0004419525),
-                           cdr0_b = list(min = 0.7, max = 0.7),
-                           cdr1_b = list(min = 0.7, max = 0.7),
-                           cdr2_b = list(min = 0.7, max = 0.7),
-                           s0 = list(min = 0.8, max = 0.8),
-                           s1 = list(min = 0.8, max = 0.8),
-                           s2 = list(min = 0.8, max = 0.8),
-                           h = list(min = 0.0, max = 0.02),
-                           j = list(min = 0.0, max = 0.02),
+                           P_epsilon = list(min = 0.074, max = 0.128),
+                           P_kappa = list(min = 0.54, max = 0.721),
+                           
+                           P_gamma0 = list(min = 0.548, max = 0.595),
+                           P_gamma1 = list(min = 0.548, max = 0.548),
+                           P_gamma2 = list(min = 0.155, max = 0.466),
+                           P_nu = list(min = 0.018, max = 0.077),
+                          
+                           cdr_b = list(min = 0.5, max = 0.8),#baseline CDR
+                           
+                           s = list(min = 0.8, max = 0.8),#treatment success
+                           
+                           P_h = list(min = 0.0, max = 0.058),
+                           P_j = list(min = 0.0, max = 0.058),
                            p1 = list(min = 0, max = 0),
                            p2 = list(min = 0, max = 0))
 
@@ -90,73 +94,119 @@ params.set_o <- cbind(
   b = adjust_lhs_to_range(lhs[, 2], "b", param_value_limits),
   c = adjust_lhs_to_range(lhs[, 3], "c", param_value_limits),
   alpha = adjust_lhs_to_range(lhs[, 4], "alpha", param_value_limits),
-  mu = adjust_lhs_to_range(lhs[, 18], "mu", param_value_limits),
-  mui0 = adjust_lhs_to_range(lhs[, 19], "mui0", param_value_limits),
-  mui1 = adjust_lhs_to_range(lhs[, 20], "mui1", param_value_limits),
-  mui2 = adjust_lhs_to_range(lhs[, 21], "mui2", param_value_limits),
-  r = adjust_lhs_to_range(lhs[, 22], "r", param_value_limits),
-  beta0 = adjust_lhs_to_range(lhs[, 5], "beta0", param_value_limits),
-  beta1 = adjust_lhs_to_range(lhs[, 6], "beta1", param_value_limits),
-  beta2 = adjust_lhs_to_range(lhs[, 7], "beta2", param_value_limits),
-  epsilon0 = adjust_lhs_to_range(lhs[, 8], "epsilon0", param_value_limits),
-  epsilon1 = adjust_lhs_to_range(lhs[, 9], "epsilon1", param_value_limits),
-  epsilon2 = adjust_lhs_to_range(lhs[, 10], "epsilon2", param_value_limits),
-  kappa = adjust_lhs_to_range(lhs[, 11], "kappa", param_value_limits),
-  gamma0 = adjust_lhs_to_range(lhs[, 12], "gamma0", param_value_limits),
-  gamma1 = adjust_lhs_to_range(lhs[, 13], "gamma1", param_value_limits),
-  gamma2 = adjust_lhs_to_range(lhs[, 14], "gamma2", param_value_limits),
-  nu0 = adjust_lhs_to_range(lhs[, 15], "nu0", param_value_limits),
-  nu1 = adjust_lhs_to_range(lhs[, 16], "nu1", param_value_limits),
-  nu2 = adjust_lhs_to_range(lhs[, 17], "nu2", param_value_limits),
-  cdr0_b = adjust_lhs_to_range(lhs[, 18], "cdr0_b", param_value_limits),
-  cdr1_b = adjust_lhs_to_range(lhs[, 19], "cdr1_b", param_value_limits),
-  cdr2_b = adjust_lhs_to_range(lhs[, 20], "cdr2_b", param_value_limits),
-  s0 = adjust_lhs_to_range(lhs[, 23], "s0", param_value_limits),
-  s1 = adjust_lhs_to_range(lhs[, 24], "s1", param_value_limits),
-  s2 = adjust_lhs_to_range(lhs[, 25], "s2", param_value_limits),
-  h = adjust_lhs_to_range(lhs[, 26], "h", param_value_limits),
-  j = adjust_lhs_to_range(lhs[, 27], "j", param_value_limits),
-  p1 = adjust_lhs_to_range(lhs[, 28], "p1", param_value_limits),
-  p2 = adjust_lhs_to_range(lhs[, 29], "p2", param_value_limits))
+  mu = adjust_lhs_to_range(lhs[, 5], "mu", param_value_limits),
+  P_mui0 = adjust_lhs_to_range(lhs[, 6], "P_mui0", param_value_limits),
+  P_mui1 = adjust_lhs_to_range(lhs[, 7], "P_mui1", param_value_limits),
+  P_mui2 = adjust_lhs_to_range(lhs[, 8], "P_mui2", param_value_limits),
+  r = adjust_lhs_to_range(lhs[, 9], "r", param_value_limits),
+  beta0 = adjust_lhs_to_range(lhs[, 10], "beta0", param_value_limits),
   
+  beta2 = adjust_lhs_to_range(lhs[, 11], "beta2", param_value_limits),
+  P_epsilon = adjust_lhs_to_range(lhs[, 12], "P_epsilon", param_value_limits),
+  
+  P_kappa = adjust_lhs_to_range(lhs[, 13], "P_kappa", param_value_limits),
+  P_gamma0 = adjust_lhs_to_range(lhs[, 14], "P_gamma0", param_value_limits),
+  P_gamma1 = adjust_lhs_to_range(lhs[, 15], "P_gamma1", param_value_limits),
+  P_gamma2 = adjust_lhs_to_range(lhs[, 16], "P_gamma2", param_value_limits),
+  P_nu = adjust_lhs_to_range(lhs[, 17], "P_nu", param_value_limits),
+  
+  cdr_b = adjust_lhs_to_range(lhs[, 18], "cdr_b", param_value_limits),
+ 
+  s = adjust_lhs_to_range(lhs[, 19], "s", param_value_limits),
+  
+  P_h = adjust_lhs_to_range(lhs[, 20], "P_h", param_value_limits),
+  P_j = adjust_lhs_to_range(lhs[, 21], "P_j", param_value_limits),
+  p1 = adjust_lhs_to_range(lhs[, 22], "p1", param_value_limits),
+  p2 = adjust_lhs_to_range(lhs[, 23], "p2", param_value_limits),
+  N= adjust_lhs_to_range(lhs[, 24], "N", param_value_limits))
 
-#View(params.set_o)
-#class(params.set_o)
+View(params.set_o)
+
 
 #creat matrix to save whole info
 params_matrix = data.frame(params.set_o)
+#add colums for parameters 
+beta1 = data.frame('beta1'=rep(NA,z))
+
+epsilon0 = data.frame('epsilon0'=rep(NA,z))
+epsilon1 = data.frame('epsilon1'=rep(NA,z))
+epsilon2 = data.frame('epsilon2'=rep(NA,z))
+
+kappa = data.frame('kappa'=rep(NA,z))
+
+nu0 = data.frame('nu0'=rep(NA,z))
+nu1 = data.frame('nu1'=rep(NA,z))
+nu2 = data.frame('nu2'=rep(NA,z))
+
+mui0 = data.frame('mui0'=rep(NA,z))
+mui1 = data.frame('mui1'=rep(NA,z))
+mui2 = data.frame('mui2'=rep(NA,z))
+
+gamma0 = data.frame('gamma0'=rep(NA,z))
+gamma1 = data.frame('gamma1'=rep(NA,z))
+gamma2 = data.frame('gamma2'=rep(NA,z))
+
+h = data.frame('h'=rep(NA,z))
+j = data.frame('j'=rep(NA,z))
 #add colums for delta base line
 delta0_b = data.frame('delta0_b'=rep(NA,z))
 delta1_b = data.frame('delta1_b'=rep(NA,z))
 delta2_b = data.frame('delta2_b'=rep(NA,z))
 
-params_matrix_equi=cbind(params_matrix,delta0_b,delta1_b,delta2_b)
-#View(params_matrix_equi)
+params_matrix_equi=cbind(params_matrix,beta1,epsilon0,epsilon1,epsilon2,
+                         mui0,mui1,mui2,kappa, nu0,nu1,nu2,gamma0,gamma1,gamma2,h,j,
+                         delta0_b,delta1_b,delta2_b)
+View(params_matrix_equi)
 #creat columns for incidences
 Equi_incidence = data.frame('Equi_incidence'=rep(NA,z))
 output_matrix_equi = cbind(params_matrix_equi, Equi_incidence) #add incidence column
 
 #View(output_matrix_equi)
-
+#compute beta1
+output_matrix_equi$beta1=(output_matrix_equi$beta2)*(output_matrix_equi$alpha)
+#compute epsilon
+output_matrix_equi$epsilon0=log(1-(output_matrix_equi$P_epsilon*output_matrix_equi$a))/(-T_L1)
+output_matrix_equi$epsilon1=log(1-(output_matrix_equi$P_epsilon*output_matrix_equi$b))/(-T_L1)
+output_matrix_equi$epsilon2=log(1-(output_matrix_equi$P_epsilon*output_matrix_equi$c))/(-T_L1)
+#compute kappa
+output_matrix_equi$kappa=log(1-(output_matrix_equi$P_kappa))/(-T_L1)
+#compute nu
+output_matrix_equi$nu0=log(1-(output_matrix_equi$P_nu*output_matrix_equi$a))/(-T_L2)
+output_matrix_equi$nu1=log(1-(output_matrix_equi$P_nu*output_matrix_equi$b))/(-T_L2)
+output_matrix_equi$nu2=log(1-(output_matrix_equi$P_nu*output_matrix_equi$c))/(-T_L2)
+#compute gamma
+output_matrix_equi$gamma0=log(1-(output_matrix_equi$P_gamma0))/(-T_I)
+output_matrix_equi$gamma1=log(1-(output_matrix_equi$P_gamma1))/(-T_I)
+output_matrix_equi$gamma2=log(1-(output_matrix_equi$P_gamma2))/(-T_I)
+#compute mui
+output_matrix_equi$mui0=log(1-(output_matrix_equi$P_mui0))/(-T_I)
+output_matrix_equi$mui1=log(1-(output_matrix_equi$P_mui1))/(-T_I)
+output_matrix_equi$mui2=log(1-(output_matrix_equi$P_mui2))/(-T_I)
+#compute h and j
+output_matrix_equi$h=log(1-(output_matrix_equi$P_h))/(-T_I)
+output_matrix_equi$j=log(1-(output_matrix_equi$P_j))/(-T_I)
 #compute baseline delta
 output_matrix_equi$delta0_b <-
-  find_delta_from_cdr(output_matrix_equi$cdr0_b, 
+  find_delta_from_cdr(output_matrix_equi$cdr_b, 
                       output_matrix_equi$gamma0 + output_matrix_equi$mui0 +
                         output_matrix_equi$mu + output_matrix_equi$h, 
-                      output_matrix_equi$s0)
+                      output_matrix_equi$s)
 output_matrix_equi$delta1_b <-
-  find_delta_from_cdr(output_matrix_equi$cdr1_b,
+  find_delta_from_cdr(output_matrix_equi$cdr_b,
                       output_matrix_equi$gamma1 + output_matrix_equi$mui1 + 
                         output_matrix_equi$mu + output_matrix_equi$j, 
-                      output_matrix_equi$s1)
+                      output_matrix_equi$s)
 output_matrix_equi$delta2_b <-
-  find_delta_from_cdr(output_matrix_equi$cdr2_b,
+  find_delta_from_cdr(output_matrix_equi$cdr_b,
                       output_matrix_equi$gamma2 + output_matrix_equi$mui2 + 
                         output_matrix_equi$mu,
-                      output_matrix_equi$s2)
+                      output_matrix_equi$s)
 
-#View(output_matrix_equi)
+View(output_matrix_equi)
 ##Initial values for sub population: 
+a=0.58 #proportion for I0
+b=0.31#proportion for I1
+c=0.11#proportion for I2
 A=1 #Fully susceptible hosts
 B=0        #Early latent hosts
 C=0        #Late latent hosts
