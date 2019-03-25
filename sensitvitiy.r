@@ -12,8 +12,7 @@ source("function_tool_kit.R")
 
 # Model Func
 Baseline_model <- function(current_timepoint, state_values, parameters)
-  {#inst #what is "inst" James?Error in func(time, state, parms, ...) :
-      #object 'inst' not found
+  {
   # create state variables (local variables)
   S=state_values[1] #fully susceptible 
   L1=state_values[2] #early latency
@@ -104,7 +103,6 @@ for (parameter in seq(length(parameter_names))) {
     adjust_lhs_to_range(lhs[, parameter], param_name, param_value_limits)
 }
 
-View(params.set_o)
 
 # add colums for parameters 
 beta1 = data.frame('beta1'=rep(NA,z))
