@@ -104,38 +104,16 @@ for (parameter in seq(length(parameter_names))) {
 }
 
 
-# add colums for parameters 
-beta1 = data.frame('beta1'=rep(NA,z))
+# add colums for parameters
 
-epsilon0 = data.frame('epsilon0'=rep(NA,z))
-epsilon1 = data.frame('epsilon1'=rep(NA,z))
-epsilon2 = data.frame('epsilon2'=rep(NA,z))
+params_matrix_equi <- params_matrix
+derived_params <- c("beta1", "epsilon0", "epsilon1", "epsilon2", "kappa", "nu0", "nu1", "nu2", "mui0", "mui1", "mui2", "gamma0",
+                    "gamma1", "gamma2", "h", "j", "delta0_b", "delta1_b", "delta2_b")
+for (i in derived_params) {
+  params_matrix_equi[[i]] <- NA
+}
 
-kappa = data.frame('kappa'=rep(NA,z))
 
-nu0 = data.frame('nu0'=rep(NA,z))
-nu1 = data.frame('nu1'=rep(NA,z))
-nu2 = data.frame('nu2'=rep(NA,z))
-
-mui0 = data.frame('mui0'=rep(NA,z))
-mui1 = data.frame('mui1'=rep(NA,z))
-mui2 = data.frame('mui2'=rep(NA,z))
-
-gamma0 = data.frame('gamma0'=rep(NA,z))
-gamma1 = data.frame('gamma1'=rep(NA,z))
-gamma2 = data.frame('gamma2'=rep(NA,z))
-
-h = data.frame('h'=rep(NA,z))
-j = data.frame('j'=rep(NA,z))
-
-# add colums for delta base line
-delta0_b = data.frame('delta0_b'=rep(NA,z))
-delta1_b = data.frame('delta1_b'=rep(NA,z))
-delta2_b = data.frame('delta2_b'=rep(NA,z))
-
-params_matrix_equi=cbind(params_matrix,beta1,epsilon0,epsilon1,epsilon2,
-                         mui0,mui1,mui2,kappa, nu0,nu1,nu2,gamma0,gamma1,gamma2,h,j,
-                         delta0_b,delta1_b,delta2_b)
 View(params_matrix_equi)
 
 # create columns for incidences
