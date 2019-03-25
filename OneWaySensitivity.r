@@ -1,4 +1,4 @@
-#high and low value of parameters
+#high and low value of parameters, mannualy save incidence at each run
 #one way sensitivity of equi incidence to params value
 library(deSolve)
 library(reshape2)
@@ -69,7 +69,7 @@ nu2<-(log(1-P_nu)/(-T_L2))*c
 
 mu= 1/65
 
-P_mui0=0.091
+P_mui0=0.074
 P_mui1=0.074
 P_mui2=0.414
 mui0=log(1-P_mui0)/(-T_I)
@@ -84,9 +84,8 @@ gamma1<-(log(1-P_gamma1)/(-T_I))
 gamma2<-(log(1-P_gamma2)/(-T_I))
 
 #baseline CDR 0.7
-cdr0_b=0.7
-cdr1_b=0.7
-cdr2_b=0.7
+cdr_b=0.8
+
 
 
 #treatment success rate 
@@ -94,7 +93,8 @@ s0=0.8
 s1=0.8
 s2=0.8
 P_h=0.044
-P_j=0.058
+P_j=0.044
+
 
 h<-(log(1-P_h)/(-T_I))
 j<-(log(1-P_j)/(-T_I))
@@ -104,9 +104,9 @@ p2<-0
 
 
 #compute baseline delta
-delta0_b=(cdr0_b*(gamma0+mui0+mu+h)/(1-cdr0_b))*s0
-delta1_b=(cdr1_b*(gamma1+mui1+mu+j)/(1-cdr1_b))*s1
-delta2_b=(cdr2_b*(gamma2+mui2+mu)/(1-cdr2_b))*s2
+delta0_b=(cdr_b*(gamma0+mui0+mu+h)/(1-cdr_b))*s0
+delta1_b=(cdr_b*(gamma1+mui1+mu+j)/(1-cdr_b))*s1
+delta2_b=(cdr_b*(gamma2+mui2+mu)/(1-cdr_b))*s2
 
 parameter_list=c(N=N,mu=mu,beta0=beta0, beta1=beta1, beta2=beta2,epsilon0=epsilon0,epsilon1=epsilon1,epsilon2=epsilon2, 
                  kappa=kappa,gamma0=gamma0,gamma1=gamma1,gamma2=gamma2,nu0=nu0,nu1=nu1,nu2=nu2, 

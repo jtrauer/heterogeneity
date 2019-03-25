@@ -15,3 +15,4 @@ find_delta_from_cdr <- function(cdr, outflows, treatment_success) {
   output_matrix_equi$delta0_b <- 
     cdr * outflows / (1 - cdr) * treatment_success
 }
+
