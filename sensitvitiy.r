@@ -66,7 +66,7 @@ param_value_limits <- list(N= list(min = 1, max = 1),
                            alpha = list(min = 0.22, max = 0.22),
                            mu = list(min = 1/55, max = 1/75),
                            
-                          Time_L1=list(min = 0.167, max = 0.9),
+                          Time_L1=list(min = 0.167, max = 1.0),
                           Time_L2=list(min = 20, max = 20),
                           Time_I=list(min = 3, max = 3),
                           P_mui0 = list(min = 0.05, max = 0.096),
@@ -236,13 +236,15 @@ for(i in 1:z){
 
 #save output as csv
 
-#write.csv(x=output_matrix_equi,file='..//heterogeneity/output/output_matrix_equi.csv')
+write.csv(x=output_matrix_equi,file='..//heterogeneity/output/output_matrix_equi.csv')
 
 #test significance of correlation, selcet parameters from csv manually 
-#Test_corelation<-read.csv(file.choose())#open csv with selected params and incidence
-bonferroni.alpha <- 0.05/14 #14 parametrs
 
-prcc <- pcc(Test_corelation[,1:14], Test_corelation[,15], nboot = 1000, rank=TRUE, conf=1-bonferroni.alpha)
+Test_corelation<-read.csv(file.choose())#open csv with selected params and incidence
+View(Test_corelation)
+bonferroni.alpha <- 0.05/11 #11 parametrs
+
+prcc <- pcc(Test_corelation[,1:11], Test_corelation[,12], nboot = 1000, rank=TRUE, conf=1-bonferroni.alpha)
 save(prcc, file='prcc.Rdata')
 load('prcc.Rdata')
 summary <- print(prcc)
@@ -282,7 +284,7 @@ e_nu_gp<-ggplot(e_nu_g, aes(x=X1, y=value)) +
   geom_point(color="coral4")+
   #geom_smooth(method = 'lm',se=FALSE,col='darkred')+
   
-  xlab(expression(nu))+
+  xlab("nu")+
   #theme(plot.margin=margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))+
   ylab("")
 e_nu_gp
@@ -295,7 +297,7 @@ e_beta2_gp<-ggplot(e_beta2_g, aes(x=X1, y=value)) +
   geom_point(color="coral4")+
   #geom_smooth(method = lm,se=FALSE,col='darkred')+
   
-  xlab(expression(beta))+
+  xlab("beta")+
   #theme(plot.margin=margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))+
   ylab("")
 e_beta2_gp
@@ -306,20 +308,29 @@ e_epsilon_gp<-ggplot(e_epsilon_g, aes(x=X1, y=value)) +
   geom_point(color="coral4")+
   #geom_smooth(method = lm,se=FALSE,col='darkred')+
   
-  xlab(expression(epsilon))+
+  xlab("epsilon")+
   #theme(plot.margin=margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))+
   ylab("")
 e_epsilon_gp
-
+#j
+e_j=data.frame(cbind(output_matrix_equi$P_j,output_matrix_equi$Equi_incidence))
+e_j_g=melt(e_j,id='X1')
+e_j_gp<-ggplot(e_j_g, aes(x=X1, y=value)) + 
+  geom_point(color="coral4")+
+  #geom_smooth(method = lm,se=FALSE,col='darkred')+
+  xlab("j")+
+  # theme(plot.margin=margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))+
+  ylab("")
+e_j_gp
 #mu
 e_mu=data.frame(cbind(output_matrix_equi$mu,output_matrix_equi$Equi_incidence))
 
 e_mu_g=melt(e_mu,id='X1')
 e_mu_gp<-ggplot(e_mu_g, aes(x=X1, y=value)) + 
-  geom_point(color="coral4")+
+  geom_point(color="chocolate1")+
   #geom_smooth(method = lm,se=FALSE,col='darkred')+
   
-  xlab(expression(mu))+
+  xlab("mu")+
   #theme(plot.margin=margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))+
   ylab("")
 e_mu_gp
@@ -328,10 +339,10 @@ e_mu_gp
 e_mui2=data.frame(cbind(output_matrix_equi$P_mui2,output_matrix_equi$Equi_incidence))
 e_mui2_g=melt(e_mui2,id='X1')
 e_mui2_gp<-ggplot(e_mui2_g, aes(x=X1, y=value)) + 
-  geom_point(color="coral4")+
+  geom_point(color="chocolate1")+
   #geom_smooth(method = lm,se=FALSE,col='darkred')+
   
-  xlab(expression(mu[i2]))+
+  xlab("mui2")+
   #theme(plot.margin=margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))+
   ylab("")
 e_mui2_gp
@@ -344,7 +355,7 @@ e_mui1_gp<-ggplot(e_mui1_g, aes(x=X1, y=value)) +
   geom_point(color="chocolate1")+
   #geom_smooth(method = lm,se=FALSE,col='darkred')+
   
-  xlab(expression(mu[i1]))+
+  xlab("mui1")+
   #theme(plot.margin=margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))+
   ylab("")
 e_mui1_gp
@@ -355,7 +366,7 @@ e_mui0_gp<-ggplot(e_mui0_g, aes(x=X1, y=value)) +
   geom_point(color="chocolate1")+
   #geom_smooth(method = lm,se=FALSE,col='darkred')+
   
-  xlab(expression(mu[i0]))+
+  xlab("mui0")+
   #theme(plot.margin=margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))+
   ylab("")
 e_mui0_gp
@@ -371,29 +382,44 @@ e_h_gp<-ggplot(e_h_g, aes(x=X1, y=value)) +
   ylab("")
 e_h_gp
 
-#j
-e_j=data.frame(cbind(output_matrix_equi$P_j,output_matrix_equi$Equi_incidence))
-e_j_g=melt(e_j,id='X1')
-e_j_gp<-ggplot(e_j_g, aes(x=X1, y=value)) + 
-  geom_point(color="chocolate1")+
-  #geom_smooth(method = lm,se=FALSE,col='darkred')+
-  xlab("j")+
- # theme(plot.margin=margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))+
-  ylab("")
-e_j_gp
 
-GG<-ggarrange(e_cdr_b_gp,e_nu_gp,e_beta2_gp,
-              e_epsilon_gp,e_mui2_gp,
-              e_mui0_gp,e_mui1_gp,e_mu_gp,
-              e_j_gp,e_h_gp,
-              ncol=4, nrow=4, common.legend = TRUE,
+
+GG<-ggarrange(e_cdr_b_gp,e_beta2_gp,e_nu_gp,
+              e_epsilon_gp,e_j_gp,e_mui2_gp,
+              e_mui1_gp,e_mui0_gp,e_mu_gp,e_h_gp,
+            
+              ncol=3, nrow=4, common.legend = TRUE,
               legend="bottom")
 
 annotate_figure(GG,left = text_grob("Equilibrium incidence per 100,000popn",rot = 90))
 #
 
 
-
+while(incidence_B_out[length(incidence_B_out)-1]-incidence_B_out[length(incidence_B_out)-2]>=1/1e-6)
+{
+  for(i in 1:z){
+  #run baseline 
+  
+  initial_values=c(S=A-(D+E+F), L1=B, L2=C, I0=D,I1=E,I2=F,inc=D+E+F)
+  params <- as.list(c(output_matrix_equi[i,]))
+  times=seq(0, 10000, by = 1)
+  #limit times to rech equilibium only
+  
+  B_out <- as.data.frame(lsoda(initial_values, times, Baseline_model, params))
+  
+  #Record Baseline equilibrium incidence
+  Nq=B_out$S+B_out$L1+B_out$L2+B_out$I0+B_out$I1+B_out$I2
+  
+  incidence_B_out=(diff(B_out$inc)/Nq)*100000
+  
+  plot(incidence_B_out)
+  #max(incidence_B_out)
+  B_Incidence_time_n = incidence_B_out[length(incidence_B_out)-1] #the model reaches equilibrium at time around 500
+  output_matrix_equi$Equi_incidence[i] = B_Incidence_time_n
+  
+} 
+  
+}
 
 
 
