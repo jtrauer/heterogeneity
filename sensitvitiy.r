@@ -83,7 +83,7 @@ param_value_limits <- list(N= list(min = 1, max = 1),
                            p2 = list(min = 0, max = 0))
 
 # Latin hypercube sampling
-z <- 1000 # choose number of points to simulate
+z <- 10 # choose number of points to simulate
 set.seed(6242015) # random number generator
 # To map these points in the unit cube to our parameters, we need minimum and maximum values for each.
 
@@ -210,29 +210,44 @@ F=1e-6*c # active TB Super-spreader 10% of TB patients are super-spreaders
 G=0 # diagnosed 
 
 #View(output_matrix_equi)
+#Loop upto equilibrium
 for(i in 1:z){
   #run baseline 
   
   initial_values=c(S=A-(D+E+F), L1=B, L2=C, I0=D,I1=E,I2=F,inc=D+E+F)
   params <- as.list(c(output_matrix_equi[i,]))
   times=seq(0, 10000, by = 1)
-  #limit times to rech equilibium only
-  
   B_out <- as.data.frame(lsoda(initial_values, times, Baseline_model, params))
-  
-  #Record Baseline equilibrium incidence
   Nq=B_out$S+B_out$L1+B_out$L2+B_out$I0+B_out$I1+B_out$I2
   
   incidence_B_out=(diff(B_out$inc)/Nq)*100000
   
-  plot(incidence_B_out)
-  #max(incidence_B_out)
-  B_Incidence_time_n = incidence_B_out[length(incidence_B_out)-1] #the model reaches equilibrium at time around 500
+  ChangeI=incidence_B_out[length(incidence_B_out)-1]-
+    incidence_B_out[length(incidence_B_out)-2]
+  
+  while(ChangeI>1.0e-6){
+    initial_values=c(S=min(B_out$S),L1=max(B_out$L1),L2=max(B_out$L2),I0=max(B_out$I0),I1=max(B_out$I1),
+                     I2=max(B_out$I2),inc=max(B_out$I0)+max(B_out$I1)+max(B_out$I2))
+    times=times=seq(0, 1000, by = 1)
+    B_out <- as.data.frame(lsoda(initial_values, times, Baseline_model, params))
+    Nq=B_out$S+B_out$L1+B_out$L2+B_out$I0+B_out$I1+B_out$I2
+    
+    incidence_B_out=(diff(B_out$inc)/Nq)*100000
+    
+    ChangeI=incidence_B_out[length(incidence_B_out)-1]-
+      incidence_B_out[length(incidence_B_out)-2]
+  }
+  
+  
+  B_Incidence_time_n = incidence_B_out[length(incidence_B_out)-1] #
+  
   output_matrix_equi$Equi_incidence[i] = B_Incidence_time_n
   
 } 
 
-#View(output_matrix_equi) #now we have incidence and each parameters in one matrix
+
+#View(output_matrix_equi) 
+#now we have incidence and each parameters in one matrix
 
 #save output as csv
 
@@ -395,31 +410,9 @@ annotate_figure(GG,left = text_grob("Equilibrium incidence per 100,000popn",rot 
 #
 
 
-while(incidence_B_out[length(incidence_B_out)-1]-incidence_B_out[length(incidence_B_out)-2]>=1/1e-6)
-{
-  for(i in 1:z){
-  #run baseline 
-  
-  initial_values=c(S=A-(D+E+F), L1=B, L2=C, I0=D,I1=E,I2=F,inc=D+E+F)
-  params <- as.list(c(output_matrix_equi[i,]))
-  times=seq(0, 10000, by = 1)
-  #limit times to rech equilibium only
-  
-  B_out <- as.data.frame(lsoda(initial_values, times, Baseline_model, params))
-  
-  #Record Baseline equilibrium incidence
-  Nq=B_out$S+B_out$L1+B_out$L2+B_out$I0+B_out$I1+B_out$I2
-  
-  incidence_B_out=(diff(B_out$inc)/Nq)*100000
-  
-  plot(incidence_B_out)
-  #max(incidence_B_out)
-  B_Incidence_time_n = incidence_B_out[length(incidence_B_out)-1] #the model reaches equilibrium at time around 500
-  output_matrix_equi$Equi_incidence[i] = B_Incidence_time_n
-  
-} 
-  
-}
+
+ 
+
 
 
 
