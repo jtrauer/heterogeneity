@@ -55,30 +55,26 @@ Baseline_model <- function(current_timepoint, state_values, parameters)
   )
 }
 
-# Time in each compartment
-T_L1=1/4#time in L1 in years
-T_L2=20#time in L2 in years
-T_I=3#Time in I in years
 
 # beginning to shift this code over to being based on lists, to avoid repeated calculations using LHS to sample from a particular window
 param_value_limits <- list(N= list(min = 1, max = 1),
                            a = list(min = 0.58, max = 0.58),
                            b = list(min = 0.31, max = 0.31),
                            c = list(min = 0.11, max = 0.11),
+                          P_epsilon = list(min = 0.074, max = 0.128),
+                          P_nu = list(min = 0.018, max = 0.077), 
                            alpha = list(min = 0.22, max = 0.22),
-                           mu = list(min = 0.0133, max = 0.0182),
-                           P_mui0 = list(min = 0.049, max = 0.091),
-                           P_mui1 = list(min = 0.049, max = 0.091),
-                           P_mui2 = list(min = 0.279, max = 0.544),
+                           mu = list(min = 1/55, max = 1/75),
+                           
+                          Time_L1=list(min = 0.167, max = 0.9),
+                          Time_L2=list(min = 20, max = 20),
+                          Time_I=list(min = 3, max = 3),
+                          P_mui0 = list(min = 0.05, max = 0.096),
+                           P_mui1 = list(min = 0.05, max = 0.096),
+                           P_mui2 = list(min = 0.327, max = 0.787),
                            r = list(min = 0.21, max = 0.21),
                            beta0 = list(min = 0, max = 0),
-                           beta2 = list(min = 30, max = 60),
-                           P_epsilon = list(min = 0.074, max = 0.128),
-                           P_kappa = list(min = 0.54, max = 0.721),
-                           P_gamma0 = list(min = 0.548, max = 0.595),
-                           P_gamma1 = list(min = 0.548, max = 0.595),
-                           P_gamma2 = list(min = 0.155, max = 0.466),
-                           P_nu = list(min = 0.018, max = 0.077),
+                           beta2 = list(min = 40, max = 60),
                            cdr_b = list(min = 0.5, max = 0.8),#baseline CDR
                            s = list(min = 0.8, max = 0.8),#Rx success
                            P_h = list(min = 0.0, max = 0.058),
@@ -87,7 +83,7 @@ param_value_limits <- list(N= list(min = 1, max = 1),
                            p2 = list(min = 0, max = 0))
 
 # Latin hypercube sampling
-z <- 2 # choose number of points to simulate
+z <- 1000 # choose number of points to simulate
 set.seed(6242015) # random number generator
 # To map these points in the unit cube to our parameters, we need minimum and maximum values for each.
 
@@ -104,17 +100,20 @@ for (parameter in seq(length(parameter_names))) {
     adjust_lhs_to_range(lhs[, parameter], param_name, param_value_limits)
 }
 
-View(params.set_o)
+View(params_matrix)
 
 # add colums for parameters 
 beta1 = data.frame('beta1'=rep(NA,z))
-
+Total_L1=data.frame('Total_L1'=rep(NA,z))
+Total_L2=data.frame('Total_L2'=rep(NA,z))
+Total_I=data.frame('Total_I'=rep(NA,z))
+epsilon = data.frame('epsilon'=rep(NA,z))
 epsilon0 = data.frame('epsilon0'=rep(NA,z))
 epsilon1 = data.frame('epsilon1'=rep(NA,z))
 epsilon2 = data.frame('epsilon2'=rep(NA,z))
 
 kappa = data.frame('kappa'=rep(NA,z))
-
+nu = data.frame('nu'=rep(NA,z))
 nu0 = data.frame('nu0'=rep(NA,z))
 nu1 = data.frame('nu1'=rep(NA,z))
 nu2 = data.frame('nu2'=rep(NA,z))
@@ -135,10 +134,10 @@ delta0_b = data.frame('delta0_b'=rep(NA,z))
 delta1_b = data.frame('delta1_b'=rep(NA,z))
 delta2_b = data.frame('delta2_b'=rep(NA,z))
 
-params_matrix_equi=cbind(params_matrix,beta1,epsilon0,epsilon1,epsilon2,
-                         mui0,mui1,mui2,kappa, nu0,nu1,nu2,gamma0,gamma1,gamma2,h,j,
+params_matrix_equi=cbind(params_matrix,beta1,Total_L1,Total_L2,Total_I,epsilon,epsilon0,epsilon1,epsilon2,
+                         mui0,mui1,mui2,kappa,nu, nu0,nu1,nu2,gamma0,gamma1,gamma2,h,j,
                          delta0_b,delta1_b,delta2_b)
-View(params_matrix_equi)
+#View(params_matrix_equi)
 
 # create columns for incidences
 Equi_incidence = data.frame('Equi_incidence'=rep(NA,z))
@@ -147,27 +146,39 @@ output_matrix_equi = cbind(params_matrix_equi, Equi_incidence) #add incidence co
 #View(output_matrix_equi)
 #compute beta1
 output_matrix_equi$beta1=(output_matrix_equi$beta2)*(output_matrix_equi$alpha)
+#compute total outflows
+output_matrix_equi$Total_L1=output_matrix_equi$Time_L1^(-1)
+output_matrix_equi$Total_L2=output_matrix_equi$Time_L2^(-1)
+output_matrix_equi$Total_I=output_matrix_equi$Time_I^(-1)
 #compute epsilon
-output_matrix_equi$epsilon0=log(1-(output_matrix_equi$P_epsilon*output_matrix_equi$a))/(-T_L1)
-output_matrix_equi$epsilon1=log(1-(output_matrix_equi$P_epsilon*output_matrix_equi$b))/(-T_L1)
-output_matrix_equi$epsilon2=log(1-(output_matrix_equi$P_epsilon*output_matrix_equi$c))/(-T_L1)
+output_matrix_equi$epsilon<-output_matrix_equi$P_epsilon*output_matrix_equi$Total_L1
+output_matrix_equi$epsilon0=output_matrix_equi$epsilon*output_matrix_equi$a
+output_matrix_equi$epsilon1=output_matrix_equi$epsilon*output_matrix_equi$b
+output_matrix_equi$epsilon2=output_matrix_equi$epsilon*output_matrix_equi$c
 #compute kappa
-output_matrix_equi$kappa=log(1-(output_matrix_equi$P_kappa))/(-T_L1)
+output_matrix_equi$kappa=output_matrix_equi$Total_L1-output_matrix_equi$epsilon+output_matrix_equi$mu  
 #compute nu
-output_matrix_equi$nu0=log(1-(output_matrix_equi$P_nu*output_matrix_equi$a))/(-T_L2)
-output_matrix_equi$nu1=log(1-(output_matrix_equi$P_nu*output_matrix_equi$b))/(-T_L2)
-output_matrix_equi$nu2=log(1-(output_matrix_equi$P_nu*output_matrix_equi$c))/(-T_L2)
-#compute gamma
-output_matrix_equi$gamma0=log(1-(output_matrix_equi$P_gamma0))/(-T_I)
-output_matrix_equi$gamma1=log(1-(output_matrix_equi$P_gamma1))/(-T_I)
-output_matrix_equi$gamma2=log(1-(output_matrix_equi$P_gamma2))/(-T_I)
+output_matrix_equi$nu=output_matrix_equi$P_nu*output_matrix_equi$Total_L2
+
+output_matrix_equi$nu0=output_matrix_equi$nu*output_matrix_equi$a
+output_matrix_equi$nu1=output_matrix_equi$nu*output_matrix_equi$b
+output_matrix_equi$nu2=output_matrix_equi$nu*output_matrix_equi$c
 #compute mui
-output_matrix_equi$mui0=log(1-(output_matrix_equi$P_mui0))/(-T_I)
-output_matrix_equi$mui1=log(1-(output_matrix_equi$P_mui1))/(-T_I)
-output_matrix_equi$mui2=log(1-(output_matrix_equi$P_mui2))/(-T_I)
+output_matrix_equi$mui0=output_matrix_equi$P_mui0*output_matrix_equi$Total_I
+output_matrix_equi$mui1=output_matrix_equi$P_mui1*output_matrix_equi$Total_I
+output_matrix_equi$mui2=output_matrix_equi$P_mui2*output_matrix_equi$Total_I
 #compute h and j
-output_matrix_equi$h=log(1-(output_matrix_equi$P_h))/(-T_I)
-output_matrix_equi$j=log(1-(output_matrix_equi$P_j))/(-T_I)
+output_matrix_equi$h=output_matrix_equi$P_h*output_matrix_equi$Total_I
+output_matrix_equi$j=output_matrix_equi$P_j*output_matrix_equi$Total_I
+
+#compute gamma
+output_matrix_equi$gamma0=output_matrix_equi$Total_I-
+  (output_matrix_equi$mu+output_matrix_equi$h+output_matrix_equi$mui0)
+output_matrix_equi$gamma1=output_matrix_equi$Total_I-
+  (output_matrix_equi$mu+output_matrix_equi$j+output_matrix_equi$mui1)
+output_matrix_equi$gamma2=output_matrix_equi$Total_I-
+  (output_matrix_equi$mui2+output_matrix_equi$mu)
+
 #compute baseline delta
 output_matrix_equi$delta0_b <-
   find_delta_from_cdr(output_matrix_equi$cdr_b, 
@@ -204,7 +215,9 @@ for(i in 1:z){
   
   initial_values=c(S=A-(D+E+F), L1=B, L2=C, I0=D,I1=E,I2=F,inc=D+E+F)
   params <- as.list(c(output_matrix_equi[i,]))
-  times=seq(0, 5000, by = 1)
+  times=seq(0, 10000, by = 1)
+  #limit times to rech equilibium only
+  
   B_out <- as.data.frame(lsoda(initial_values, times, Baseline_model, params))
   
   #Record Baseline equilibrium incidence
@@ -214,7 +227,7 @@ for(i in 1:z){
   
   plot(incidence_B_out)
   #max(incidence_B_out)
-  B_Incidence_time_n = incidence_B_out[4999] #the model reaches equilibrium at time around 500
+  B_Incidence_time_n = incidence_B_out[length(incidence_B_out)-1] #the model reaches equilibrium at time around 500
   output_matrix_equi$Equi_incidence[i] = B_Incidence_time_n
   
 } 
@@ -223,10 +236,10 @@ for(i in 1:z){
 
 #save output as csv
 
-write.csv(x=output_matrix_equi,file='..//heterogeneity/output/output_matrix_equi.csv')
+#write.csv(x=output_matrix_equi,file='..//heterogeneity/output/output_matrix_equi.csv')
 
 #test significance of correlation, selcet parameters from csv manually 
-Test_corelation<-read.csv(file.choose())#open csv with selected params and incidence
+#Test_corelation<-read.csv(file.choose())#open csv with selected params and incidence
 bonferroni.alpha <- 0.05/14 #14 parametrs
 
 prcc <- pcc(Test_corelation[,1:14], Test_corelation[,15], nboot = 1000, rank=TRUE, conf=1-bonferroni.alpha)
@@ -249,7 +262,6 @@ abline(h=0)
 #ggplot for parameter space Vs equilibrium incidence
 #significan colour= coral4, non-significant chocolate1 
 #CDR, significant
-
 e_cdr_b=data.frame(cbind(output_matrix_equi$cdr_b, output_matrix_equi$Equi_incidence))
 
 e_cdr_b_g=melt(e_cdr_b,id='X1')
@@ -274,16 +286,6 @@ e_nu_gp<-ggplot(e_nu_g, aes(x=X1, y=value)) +
   #theme(plot.margin=margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))+
   ylab("")
 e_nu_gp
-#kappa
-e_kappa=data.frame(cbind(output_matrix_equi$P_kappa, output_matrix_equi$Equi_incidence))
-e_kappa_g=melt(e_kappa,id='X1')
-e_kappa_gp<-ggplot(e_kappa_g, aes(x=X1, y=value)) + 
-  geom_point(color="coral4")+
-  #geom_smooth(method = lm,se=FALSE,col='darkred')+
-  xlab(expression(kappa))+
-  #theme(plot.margin=margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))+
-  ylab("")
-e_kappa_gp 
 
 #beta2
 
@@ -322,41 +324,6 @@ e_mu_gp<-ggplot(e_mu_g, aes(x=X1, y=value)) +
   ylab("")
 e_mu_gp
 
-#gamma2
-e_gamma2=data.frame(cbind(output_matrix_equi$P_gamma2,output_matrix_equi$Equi_incidence))
-e_gamma2_g=melt(e_gamma2,id='X1')
-e_gamma2_gp<-ggplot(e_gamma2_g, aes(x=X1, y=value)) + 
-  geom_point(color="coral4")+
-  #geom_smooth(method = lm,se=FALSE,col='darkred')+
-  
-  xlab(expression(gamma[2]))+
-  #theme(plot.margin=margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))+
-  ylab("")
-e_gamma2_gp
-#gamma1
-e_gamma1=data.frame(cbind(output_matrix_equi$P_gamma1,output_matrix_equi$Equi_incidence))
-
-e_gamma1_g=melt(e_gamma1,id='X1')
-e_gamma1_gp<-ggplot(e_gamma1_g, aes(x=X1, y=value)) + 
-  geom_point(color="chocolate1")+
-  #geom_smooth(method = lm,se=FALSE,col='darkred')+
-  
-  xlab(expression(gamma[1]))+
-  #theme(plot.margin=margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))+
-  ylab("")
-e_gamma1_gp
-
-#gamma0
-e_gamma0=data.frame(cbind(output_matrix_equi$P_gamma0,output_matrix_equi$Equi_incidence))
-e_gamma0_g=melt(e_gamma0,id='X1')
-e_gamma0_gp<-ggplot(e_gamma0_g, aes(x=X1, y=value)) + 
-  geom_point(color="chocolate1")+
-  #geom_smooth(method = lm,se=FALSE,col='darkred')+
-  
-  xlab(expression(gamma[0]))+
-  #theme(plot.margin=margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))+
-  ylab("")
-e_gamma0_gp
 #mui2
 e_mui2=data.frame(cbind(output_matrix_equi$P_mui2,output_matrix_equi$Equi_incidence))
 e_mui2_g=melt(e_mui2,id='X1')
@@ -415,9 +382,9 @@ e_j_gp<-ggplot(e_j_g, aes(x=X1, y=value)) +
   ylab("")
 e_j_gp
 
-GG<-ggarrange(e_cdr_b_gp,e_nu_gp,e_beta2_gp,e_kappa_gp,
-              e_epsilon_gp,e_gamma2_gp,e_mui2_gp,e_mu_gp,
-              e_mui0_gp,e_mui1_gp,e_gamma0_gp,e_gamma1_gp,
+GG<-ggarrange(e_cdr_b_gp,e_nu_gp,e_beta2_gp,
+              e_epsilon_gp,e_mui2_gp,
+              e_mui0_gp,e_mui1_gp,e_mu_gp,
               e_j_gp,e_h_gp,
               ncol=4, nrow=4, common.legend = TRUE,
               legend="bottom")
