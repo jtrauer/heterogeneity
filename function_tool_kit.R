@@ -20,3 +20,12 @@ find_delta_from_cdr <- function(cdr, outflows, treatment_success) {
 find_rate_from_proportion <- function(proportion, sojourn_time) {
   -log(1 - proportion) / sojourn_time
 }
+
+alternative_rate_from_proportion_1 <- function(proportion, sojourn_time) {
+  -log(proportion) / sojourn_time
+}
+
+alternative_rate_from_proportion_2 <- function(proportion, sojourn_time) {
+  proportion / sojourn_time
+}
+
