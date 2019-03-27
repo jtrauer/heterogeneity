@@ -103,24 +103,16 @@ for (parameter in seq(length(parameter_names))) {
     adjust_lhs_to_range(lhs[, parameter], param_name, param_value_limits)
 }
 
-
-# add colums for parameters
-
-params_matrix_equi <- params_matrix
+# Add colums for parameters and outputs
+output_matrix_equi <- params_matrix
 derived_params <- c("beta1", "epsilon0", "epsilon1", "epsilon2", "kappa", "nu0", "nu1", "nu2", "mui0", "mui1", "mui2", "gamma0",
-                    "gamma1", "gamma2", "h", "j", "delta0_b", "delta1_b", "delta2_b")
+                    "gamma1", "gamma2", "h", "j", "delta0_b", "delta1_b", "delta2_b", "Equi_incidence")
 for (i in derived_params) {
-  params_matrix_equi[[i]] <- NA
+  output_matrix_equi[[i]] <- NA
 }
 
-
-View(params_matrix_equi)
-
-# create columns for incidences
-Equi_incidence = data.frame('Equi_incidence'=rep(NA,z))
-output_matrix_equi = cbind(params_matrix_equi, Equi_incidence) #add incidence column
-
 #View(output_matrix_equi)
+
 #compute beta1
 output_matrix_equi$beta1=(output_matrix_equi$beta2)*(output_matrix_equi$alpha)
 
