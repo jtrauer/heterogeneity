@@ -103,7 +103,7 @@ param_value_limits <- list(N= list(min = 1, max = 1),
                            p2 = list(min = 0, max = 0)) 
 
 # Latin hypercube sampling
-z <- 1000 # choose number of points to simulate
+z <- 10 # choose number of points to simulate
 set.seed(6242015) # random number generator
 # To map these points in the unit cube to our parameters, we need minimum and maximum values for each.
 
@@ -248,8 +248,8 @@ for(i in 1:z){
  Nq=B_out$S+B_out$L1+B_out$L2+B_out$I0+B_out$I1+B_out$I2
  incidence_B_out=(diff(B_out$inc)/Nq)*100000
   
- ChangeI=incidence_B_out[length(incidence_B_out)-1]-
-   incidence_B_out[length(incidence_B_out)-2]
+ ChangeI=abs(incidence_B_out[length(incidence_B_out)-1]-
+   incidence_B_out[length(incidence_B_out)-2])
  
  while(ChangeI>1.0e-6){
    initial_values=c(S=min(B_out$S),L1=max(B_out$L1),L2=max(B_out$L2),I0=max(B_out$I0),I1=max(B_out$I1),
@@ -257,11 +257,9 @@ for(i in 1:z){
    times=times=seq(0, 1000, by = 1)
    B_out <- as.data.frame(lsoda(initial_values, times, Baseline_model, params))
    Nq=B_out$S+B_out$L1+B_out$L2+B_out$I0+B_out$I1+B_out$I2
-   
-   incidence_B_out=(diff(B_out$inc)/Nq)*100000
-   
-   ChangeI=incidence_B_out[length(incidence_B_out)-1]-
-     incidence_B_out[length(incidence_B_out)-2]
+  incidence_B_out=(diff(B_out$inc)/Nq)*100000
+   ChangeI=abs(incidence_B_out[length(incidence_B_out)-1]-
+     incidence_B_out[length(incidence_B_out)-2])
  }
  B_Incidence_time_n = incidence_B_out[length(incidence_B_out)-1] #the model reaches equilibrium at time around 500
  params_matrix_Sint$B_incidence[i]=B_Incidence_time_n

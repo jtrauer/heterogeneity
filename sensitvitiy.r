@@ -12,8 +12,7 @@ source("function_tool_kit.R")
 
 # Model Func
 Baseline_model <- function(current_timepoint, state_values, parameters)
-  {#inst #what is "inst" James?Error in func(time, state, parms, ...) :
-      #object 'inst' not found
+  {
   # create state variables (local variables)
   S=state_values[1] #fully susceptible 
   L1=state_values[2] #early latency
@@ -100,85 +99,45 @@ for (parameter in seq(length(parameter_names))) {
     adjust_lhs_to_range(lhs[, parameter], param_name, param_value_limits)
 }
 
-#View(params_matrix)
 
-# add colums for parameters 
-beta1 = data.frame('beta1'=rep(NA,z))
-Total_L1=data.frame('Total_L1'=rep(NA,z))
-Total_L2=data.frame('Total_L2'=rep(NA,z))
-Total_I=data.frame('Total_I'=rep(NA,z))
-epsilon = data.frame('epsilon'=rep(NA,z))
-epsilon0 = data.frame('epsilon0'=rep(NA,z))
-epsilon1 = data.frame('epsilon1'=rep(NA,z))
-epsilon2 = data.frame('epsilon2'=rep(NA,z))
-
-kappa = data.frame('kappa'=rep(NA,z))
-nu = data.frame('nu'=rep(NA,z))
-nu0 = data.frame('nu0'=rep(NA,z))
-nu1 = data.frame('nu1'=rep(NA,z))
-nu2 = data.frame('nu2'=rep(NA,z))
-
-mui0 = data.frame('mui0'=rep(NA,z))
-mui1 = data.frame('mui1'=rep(NA,z))
-mui2 = data.frame('mui2'=rep(NA,z))
-
-gamma0 = data.frame('gamma0'=rep(NA,z))
-gamma1 = data.frame('gamma1'=rep(NA,z))
-gamma2 = data.frame('gamma2'=rep(NA,z))
-
-h = data.frame('h'=rep(NA,z))
-j = data.frame('j'=rep(NA,z))
-
-# add colums for delta base line
-delta0_b = data.frame('delta0_b'=rep(NA,z))
-delta1_b = data.frame('delta1_b'=rep(NA,z))
-delta2_b = data.frame('delta2_b'=rep(NA,z))
-
-params_matrix_equi=cbind(params_matrix,beta1,Total_L1,Total_L2,Total_I,epsilon,epsilon0,epsilon1,epsilon2,
-                         mui0,mui1,mui2,kappa,nu, nu0,nu1,nu2,gamma0,gamma1,gamma2,h,j,
-                         delta0_b,delta1_b,delta2_b)
-#View(params_matrix_equi)
-
-# create columns for incidences
-Equi_incidence = data.frame('Equi_incidence'=rep(NA,z))
-output_matrix_equi = cbind(params_matrix_equi, Equi_incidence) #add incidence column
+# Add colums for parameters and outputs
+output_matrix_equi <- params_matrix
+derived_params <- c("beta1", "epsilon0", "epsilon1", "epsilon2", "kappa", "nu0", "nu1", "nu2", "mui0", "mui1", "mui2", "gamma0",
+                    "gamma1", "gamma2", "h", "j", "delta0_b", "delta1_b", "delta2_b", "Equi_incidence")
+for (i in derived_params) {
+  output_matrix_equi[[i]] <- NA
+}
 
 #View(output_matrix_equi)
+
 #compute beta1
 output_matrix_equi$beta1=(output_matrix_equi$beta2)*(output_matrix_equi$alpha)
-#compute total outflows
-output_matrix_equi$Total_L1=output_matrix_equi$Time_L1^(-1)
-output_matrix_equi$Total_L2=output_matrix_equi$Time_L2^(-1)
-output_matrix_equi$Total_I=output_matrix_equi$Time_I^(-1)
-#compute epsilon
-output_matrix_equi$epsilon<-output_matrix_equi$P_epsilon*output_matrix_equi$Total_L1
-output_matrix_equi$epsilon0=output_matrix_equi$epsilon*output_matrix_equi$a
-output_matrix_equi$epsilon1=output_matrix_equi$epsilon*output_matrix_equi$b
-output_matrix_equi$epsilon2=output_matrix_equi$epsilon*output_matrix_equi$c
-#compute kappa
-output_matrix_equi$kappa=output_matrix_equi$Total_L1-output_matrix_equi$epsilon+output_matrix_equi$mu  
-#compute nu
-output_matrix_equi$nu=output_matrix_equi$P_nu*output_matrix_equi$Total_L2
 
-output_matrix_equi$nu0=output_matrix_equi$nu*output_matrix_equi$a
-output_matrix_equi$nu1=output_matrix_equi$nu*output_matrix_equi$b
-output_matrix_equi$nu2=output_matrix_equi$nu*output_matrix_equi$c
-#compute mui
-output_matrix_equi$mui0=output_matrix_equi$P_mui0*output_matrix_equi$Total_I
-output_matrix_equi$mui1=output_matrix_equi$P_mui1*output_matrix_equi$Total_I
-output_matrix_equi$mui2=output_matrix_equi$P_mui2*output_matrix_equi$Total_I
-#compute h and j
-output_matrix_equi$h=output_matrix_equi$P_h*output_matrix_equi$Total_I
-output_matrix_equi$j=output_matrix_equi$P_j*output_matrix_equi$Total_I
 
-#compute gamma
-output_matrix_equi$gamma0=output_matrix_equi$Total_I-
+# compute parameters that are derived from proportions and sojourn times (I think)
+output_matrix_equi$epsilon0 <- output_matrix_equi$P_epsilon * output_matrix_equi$a / output_matrix_equi$Time_L1
+output_matrix_equi$epsilon1 <- output_matrix_equi$P_epsilon * output_matrix_equi$b/ output_matrix_equi$Time_L1
+output_matrix_equi$epsilon2 <- output_matrix_equi$P_epsilon * output_matrix_equi$c/ output_matrix_equi$Time_L1
+
+output_matrix_equi$kappa <-1/output_matrix_equi$Time_L1-(output_matrix_equi$P_epsilon/output_matrix_equi$Time_L1+output_matrix_equi$mu)  
+
+output_matrix_equi$nu0 <- (output_matrix_equi$P_nu* output_matrix_equi$a/output_matrix_equi$Time_L2)
+output_matrix_equi$nu1 <- (output_matrix_equi$P_nu * output_matrix_equi$b/ output_matrix_equi$Time_L2)
+output_matrix_equi$nu2 <- (output_matrix_equi$P_nu * output_matrix_equi$c/ output_matrix_equi$Time_L2)
+
+output_matrix_equi$mui0 <- (output_matrix_equi$P_mui0/ output_matrix_equi$Time_I)
+output_matrix_equi$mui1 <- (output_matrix_equi$P_mui1/ output_matrix_equi$Time_I)
+output_matrix_equi$mui2 <- (output_matrix_equi$P_mui2/ output_matrix_equi$Time_I)
+
+output_matrix_equi$h <- (output_matrix_equi$P_h/ output_matrix_equi$Time_I)
+output_matrix_equi$j <- (output_matrix_equi$P_j/ output_matrix_equi$Time_I)
+
+output_matrix_equi$gamma0=1/output_matrix_equi$Time_I-
   (output_matrix_equi$mu+output_matrix_equi$h+output_matrix_equi$mui0)
-output_matrix_equi$gamma1=output_matrix_equi$Total_I-
+output_matrix_equi$gamma1=1/output_matrix_equi$Time_I-
   (output_matrix_equi$mu+output_matrix_equi$j+output_matrix_equi$mui1)
-output_matrix_equi$gamma2=output_matrix_equi$Total_I-
+output_matrix_equi$gamma2=1/output_matrix_equi$Time_I-
   (output_matrix_equi$mui2+output_matrix_equi$mu)
-
 #compute baseline delta
 output_matrix_equi$delta0_b <-
   find_delta_from_cdr(output_matrix_equi$cdr_b, 
@@ -222,8 +181,8 @@ for(i in 1:z){
   
   incidence_B_out=(diff(B_out$inc)/Nq)*100000
   
-  ChangeI=incidence_B_out[length(incidence_B_out)-1]-
-    incidence_B_out[length(incidence_B_out)-2]
+  ChangeI=abs(incidence_B_out[length(incidence_B_out)-1]-
+    incidence_B_out[length(incidence_B_out)-2])
   
   while(ChangeI>1.0e-6){
     initial_values=c(S=min(B_out$S),L1=max(B_out$L1),L2=max(B_out$L2),I0=max(B_out$I0),
@@ -235,8 +194,8 @@ for(i in 1:z){
     
     incidence_B_out=(diff(B_out$inc)/Nq)*100000
     
-    ChangeI=incidence_B_out[length(incidence_B_out)-1]-
-      incidence_B_out[length(incidence_B_out)-2]
+    ChangeI=abs(incidence_B_out[length(incidence_B_out)-1]-
+      incidence_B_out[length(incidence_B_out)-2])
   }
   B_Incidence_time_n = incidence_B_out[length(incidence_B_out)-1] #
   
