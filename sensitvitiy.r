@@ -2,7 +2,7 @@
 library(deSolve)
 library(reshape2)
 library(ggplot2)
-#library(ggpubr)
+library(ggpubr)
 library(lhs)
 library(sensitivity)
 
@@ -83,7 +83,7 @@ param_value_limits <- list(N= list(min = 1, max = 1),
                            p2 = list(min = 0, max = 0))
 
 # Latin hypercube sampling
-z <- 10 # choose number of points to simulate
+z <- 1000 # choose number of points to simulate
 set.seed(6242015) # random number generator
 # To map these points in the unit cube to our parameters, we need minimum and maximum values for each.
 
@@ -100,7 +100,7 @@ for (parameter in seq(length(parameter_names))) {
     adjust_lhs_to_range(lhs[, parameter], param_name, param_value_limits)
 }
 
-View(params_matrix)
+#View(params_matrix)
 
 # add colums for parameters 
 beta1 = data.frame('beta1'=rep(NA,z))
@@ -196,7 +196,7 @@ output_matrix_equi$delta2_b <-
                         output_matrix_equi$mu,
                       output_matrix_equi$s)
 
-View(output_matrix_equi)
+#View(output_matrix_equi)
 ## Initial values for sub population: 
 a=0.58 #proportion for I0
 b=0.31 #proportion for I1
@@ -226,8 +226,9 @@ for(i in 1:z){
     incidence_B_out[length(incidence_B_out)-2]
   
   while(ChangeI>1.0e-6){
-    initial_values=c(S=min(B_out$S),L1=max(B_out$L1),L2=max(B_out$L2),I0=max(B_out$I0),I1=max(B_out$I1),
-                     I2=max(B_out$I2),inc=max(B_out$I0)+max(B_out$I1)+max(B_out$I2))
+    initial_values=c(S=min(B_out$S),L1=max(B_out$L1),L2=max(B_out$L2),I0=max(B_out$I0),
+                     I1=max(B_out$I1),I2=max(B_out$I2),inc=max(B_out$I0)+max(B_out$I1)+max(B_out$I2))
+                    
     times=times=seq(0, 1000, by = 1)
     B_out <- as.data.frame(lsoda(initial_values, times, Baseline_model, params))
     Nq=B_out$S+B_out$L1+B_out$L2+B_out$I0+B_out$I1+B_out$I2
@@ -237,8 +238,6 @@ for(i in 1:z){
     ChangeI=incidence_B_out[length(incidence_B_out)-1]-
       incidence_B_out[length(incidence_B_out)-2]
   }
-  
-  
   B_Incidence_time_n = incidence_B_out[length(incidence_B_out)-1] #
   
   output_matrix_equi$Equi_incidence[i] = B_Incidence_time_n
@@ -253,7 +252,7 @@ for(i in 1:z){
 
 write.csv(x=output_matrix_equi,file='..//heterogeneity/output/output_matrix_equi.csv')
 
-#test significance of correlation, selcet parameters from csv manually 
+#test significance of correlation, select parameters from csv manually 
 
 Test_corelation<-read.csv(file.choose())#open csv with selected params and incidence
 View(Test_corelation)
@@ -273,7 +272,7 @@ axis(2)
 axis(1, at=seq(1:14), labels=row.names(Corl), las=2)
 mtext(text='Parameter', side=1, line=4.5)
 box()
-for(i in 1:14) lines(c(i,i),c(Corl[i,4], Corl[i,5]))
+for(i in 1:11) lines(c(i,i),c(Corl[i,4], Corl[i,5]))
 abline(h=0)
 
 #ggplot for parameter space Vs equilibrium incidence
@@ -327,6 +326,16 @@ e_epsilon_gp<-ggplot(e_epsilon_g, aes(x=X1, y=value)) +
   #theme(plot.margin=margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))+
   ylab("")
 e_epsilon_gp
+#Time L1
+e_T_L1=data.frame(cbind(output_matrix_equi$Time_L1,output_matrix_equi$Equi_incidence))
+e_TL1_g=melt(e_T_L1,id='X1')
+e_TL1_gp<-ggplot(e_TL1_g, aes(x=X1, y=value)) + 
+  geom_point(color="coral4")+
+  #geom_smooth(method = lm,se=FALSE,col='darkred')+
+  xlab("Time L1")+
+  # theme(plot.margin=margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))+
+  ylab("")
+e_TL1_gp
 #j
 e_j=data.frame(cbind(output_matrix_equi$P_j,output_matrix_equi$Equi_incidence))
 e_j_g=melt(e_j,id='X1')
@@ -399,10 +408,9 @@ e_h_gp
 
 
 
-GG<-ggarrange(e_cdr_b_gp,e_beta2_gp,e_nu_gp,
-              e_epsilon_gp,e_j_gp,e_mui2_gp,
+GG<-ggarrange(e_cdr_b_gp,e_beta2_gp,
+              e_epsilon_gp,e_nu_gp,e_TL1_gp,e_j_gp,e_mui2_gp,
               e_mui1_gp,e_mui0_gp,e_mu_gp,e_h_gp,
-            
               ncol=3, nrow=4, common.legend = TRUE,
               legend="bottom")
 

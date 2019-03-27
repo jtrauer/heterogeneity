@@ -103,7 +103,7 @@ param_value_limits <- list(N= list(min = 1, max = 1),
                            p2 = list(min = 0, max = 0)) 
 
 # Latin hypercube sampling
-z <- 2 # choose number of points to simulate
+z <- 1000 # choose number of points to simulate
 set.seed(6242015) # random number generator
 # To map these points in the unit cube to our parameters, we need minimum and maximum values for each.
 
@@ -275,8 +275,8 @@ for(i in 1:z){
   Nq=Int_out$S+Int_out$L1+Int_out$L2+Int_out$I0+Int_out$I1+Int_out$I2
   Int_incidence_out=(diff(Int_out$inc)/Nq)*100000
   
-  #considering a 10 years impact of intervention
-  Int_Incidence_time_n = Int_incidence_out[10]
+  #considering a 20 years impact of intervention
+  Int_Incidence_time_n = Int_incidence_out[20]
   params_matrix_Sint$Int_incidence[i]=Int_Incidence_time_n
   #calculate the difference between baseline incidence and intervention incidence
   Change_inc=B_Incidence_time_n-Int_Incidence_time_n 
