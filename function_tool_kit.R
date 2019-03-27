@@ -16,3 +16,7 @@ find_delta_from_cdr <- function(cdr, outflows, treatment_success) {
     cdr * outflows / (1 - cdr) * treatment_success
 }
 
+# need to check this - code to get rate from proportion and sojourn time - I think
+find_rate_from_proportion <- function(proportion, sojourn_time) {
+  -log(1 - proportion) / sojourn_time
+}

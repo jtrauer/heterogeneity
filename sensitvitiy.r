@@ -123,27 +123,24 @@ output_matrix_equi = cbind(params_matrix_equi, Equi_incidence) #add incidence co
 #View(output_matrix_equi)
 #compute beta1
 output_matrix_equi$beta1=(output_matrix_equi$beta2)*(output_matrix_equi$alpha)
-#compute epsilon
-output_matrix_equi$epsilon0=log(1-(output_matrix_equi$P_epsilon*output_matrix_equi$a))/(-T_L1)
-output_matrix_equi$epsilon1=log(1-(output_matrix_equi$P_epsilon*output_matrix_equi$b))/(-T_L1)
-output_matrix_equi$epsilon2=log(1-(output_matrix_equi$P_epsilon*output_matrix_equi$c))/(-T_L1)
-#compute kappa
-output_matrix_equi$kappa=log(1-(output_matrix_equi$P_kappa))/(-T_L1)
-#compute nu
-output_matrix_equi$nu0=log(1-(output_matrix_equi$P_nu*output_matrix_equi$a))/(-T_L2)
-output_matrix_equi$nu1=log(1-(output_matrix_equi$P_nu*output_matrix_equi$b))/(-T_L2)
-output_matrix_equi$nu2=log(1-(output_matrix_equi$P_nu*output_matrix_equi$c))/(-T_L2)
-#compute gamma
-output_matrix_equi$gamma0=log(1-(output_matrix_equi$P_gamma0))/(-T_I)
-output_matrix_equi$gamma1=log(1-(output_matrix_equi$P_gamma1))/(-T_I)
-output_matrix_equi$gamma2=log(1-(output_matrix_equi$P_gamma2))/(-T_I)
-#compute mui
-output_matrix_equi$mui0=log(1-(output_matrix_equi$P_mui0))/(-T_I)
-output_matrix_equi$mui1=log(1-(output_matrix_equi$P_mui1))/(-T_I)
-output_matrix_equi$mui2=log(1-(output_matrix_equi$P_mui2))/(-T_I)
-#compute h and j
-output_matrix_equi$h=log(1-(output_matrix_equi$P_h))/(-T_I)
-output_matrix_equi$j=log(1-(output_matrix_equi$P_j))/(-T_I)
+
+# compute parameters that are derived from proportions and sojourn times (I think)
+output_matrix_equi$epsilon0 <- find_rate_from_proportion(output_matrix_equi$P_epsilon * output_matrix_equi$a, T_L1)
+output_matrix_equi$epsilon1 <- find_rate_from_proportion(output_matrix_equi$P_epsilon * output_matrix_equi$b, T_L1)
+output_matrix_equi$epsilon2 <- find_rate_from_proportion(output_matrix_equi$P_epsilon * output_matrix_equi$c, T_L1)
+output_matrix_equi$kappa <- find_rate_from_proportion(output_matrix_equi$P_kappa, T_L1)
+output_matrix_equi$nu0 <- find_rate_from_proportion(output_matrix_equi$P_nu * output_matrix_equi$a, T_L2)
+output_matrix_equi$nu1 <- find_rate_from_proportion(output_matrix_equi$P_nu * output_matrix_equi$b, T_L2)
+output_matrix_equi$nu2 <- find_rate_from_proportion(output_matrix_equi$P_nu * output_matrix_equi$c, T_L2)
+output_matrix_equi$gamma0 <- find_rate_from_proportion(output_matrix_equi$P_gamma0, T_I)
+output_matrix_equi$gamma1 <- find_rate_from_proportion(output_matrix_equi$P_gamma1, T_I)
+output_matrix_equi$gamma2 <- find_rate_from_proportion(output_matrix_equi$P_gamma2, T_I)
+output_matrix_equi$mui0 <- find_rate_from_proportion(output_matrix_equi$P_mui0, T_I)
+output_matrix_equi$mui1 <- find_rate_from_proportion(output_matrix_equi$P_mui1, T_I)
+output_matrix_equi$mui2 <- find_rate_from_proportion(output_matrix_equi$P_mui2, T_I)
+output_matrix_equi$h <- find_rate_from_proportion(output_matrix_equi$P_h, T_I)
+output_matrix_equi$j <- find_rate_from_proportion(output_matrix_equi$P_h, T_I)
+
 #compute baseline delta
 output_matrix_equi$delta0_b <-
   find_delta_from_cdr(output_matrix_equi$cdr_b, 
