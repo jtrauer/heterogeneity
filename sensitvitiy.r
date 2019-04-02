@@ -113,31 +113,29 @@ for (i in derived_params) {
 #compute beta1
 output_matrix_equi$beta1=(output_matrix_equi$beta2)*(output_matrix_equi$alpha)
 
+# compute parameters that are derived from proportions and sojourn times
+output_matrix_equi$epsilon0 <- find_rate_from_proportion(output_matrix_equi$P_epsilon * output_matrix_equi$a, output_matrix_equi$Time_L1)
+output_matrix_equi$epsilon1 <- find_rate_from_proportion(output_matrix_equi$P_epsilon * output_matrix_equi$b, output_matrix_equi$Time_L1)
+output_matrix_equi$epsilon2 <- find_rate_from_proportion(output_matrix_equi$P_epsilon * output_matrix_equi$c, output_matrix_equi$Time_L1)
+output_matrix_equi$nu0 <- find_rate_from_proportion(output_matrix_equi$P_nu * output_matrix_equi$a, output_matrix_equi$Time_L2)
+output_matrix_equi$nu1 <- find_rate_from_proportion(output_matrix_equi$P_nu * output_matrix_equi$b, output_matrix_equi$Time_L2)
+output_matrix_equi$nu2 <- find_rate_from_proportion(output_matrix_equi$P_nu * output_matrix_equi$c, output_matrix_equi$Time_L2)
+output_matrix_equi$mui0 <- find_rate_from_proportion(output_matrix_equi$P_mui0, output_matrix_equi$Time_I)
+output_matrix_equi$mui1 <- find_rate_from_proportion(output_matrix_equi$P_mui1, output_matrix_equi$Time_I)
+output_matrix_equi$mui2 <- find_rate_from_proportion(output_matrix_equi$P_mui2, output_matrix_equi$Time_I)
+output_matrix_equi$h <- find_rate_from_proportion(output_matrix_equi$P_h, output_matrix_equi$Time_I)
+output_matrix_equi$j <- find_rate_from_proportion(output_matrix_equi$P_h, output_matrix_equi$Time_I)
 
-# compute parameters that are derived from proportions and sojourn times (I think)
-output_matrix_equi$epsilon0 <- output_matrix_equi$P_epsilon * output_matrix_equi$a / output_matrix_equi$Time_L1
-output_matrix_equi$epsilon1 <- output_matrix_equi$P_epsilon * output_matrix_equi$b/ output_matrix_equi$Time_L1
-output_matrix_equi$epsilon2 <- output_matrix_equi$P_epsilon * output_matrix_equi$c/ output_matrix_equi$Time_L1
-
+# other parameter calculations that have now changed
 output_matrix_equi$kappa <-1/output_matrix_equi$Time_L1-(output_matrix_equi$P_epsilon/output_matrix_equi$Time_L1+output_matrix_equi$mu)  
-
-output_matrix_equi$nu0 <- (output_matrix_equi$P_nu* output_matrix_equi$a/output_matrix_equi$Time_L2)
-output_matrix_equi$nu1 <- (output_matrix_equi$P_nu * output_matrix_equi$b/ output_matrix_equi$Time_L2)
-output_matrix_equi$nu2 <- (output_matrix_equi$P_nu * output_matrix_equi$c/ output_matrix_equi$Time_L2)
-
-output_matrix_equi$mui0 <- (output_matrix_equi$P_mui0/ output_matrix_equi$Time_I)
-output_matrix_equi$mui1 <- (output_matrix_equi$P_mui1/ output_matrix_equi$Time_I)
-output_matrix_equi$mui2 <- (output_matrix_equi$P_mui2/ output_matrix_equi$Time_I)
-
-output_matrix_equi$h <- (output_matrix_equi$P_h/ output_matrix_equi$Time_I)
-output_matrix_equi$j <- (output_matrix_equi$P_j/ output_matrix_equi$Time_I)
-
 output_matrix_equi$gamma0=1/output_matrix_equi$Time_I-
   (output_matrix_equi$mu+output_matrix_equi$h+output_matrix_equi$mui0)
 output_matrix_equi$gamma1=1/output_matrix_equi$Time_I-
   (output_matrix_equi$mu+output_matrix_equi$j+output_matrix_equi$mui1)
 output_matrix_equi$gamma2=1/output_matrix_equi$Time_I-
   (output_matrix_equi$mui2+output_matrix_equi$mu)
+
+
 #compute baseline delta
 output_matrix_equi$delta0_b <-
   find_delta_from_cdr(output_matrix_equi$cdr_b, 
