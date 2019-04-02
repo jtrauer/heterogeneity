@@ -21,3 +21,7 @@ find_rate_from_proportion <- function(proportion, sojourn_time) {
   proportion / sojourn_time
 }
 
+# pass parameters to similar function to simplify input code
+find_rate_from_proportion_params <- function(proportion, sojourn_time, parameters) {
+  parameters[[proportion]] / parameters[[sojourn_time]]
+}
