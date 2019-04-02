@@ -109,7 +109,7 @@ for (i in derived_params) {
 }
 
 #compute beta1
-output_matrix_equi$beta1=(output_matrix_equi$beta2)*(output_matrix_equi$alpha)
+output_matrix_equi$beta1 = output_matrix_equi$beta2 * output_matrix_equi$alpha
 
 # compute parameters that are derived from proportions and sojourn times
 output_matrix_equi$epsilon0 <- find_rate_from_proportion_params("P_epsilon", "Time_L1", output_matrix_equi, "Time_L1")
