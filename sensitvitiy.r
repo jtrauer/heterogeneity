@@ -108,8 +108,6 @@ for (i in derived_params) {
   output_matrix_equi[[i]] <- NA
 }
 
-#View(output_matrix_equi)
-
 #compute beta1
 output_matrix_equi$beta1=(output_matrix_equi$beta2)*(output_matrix_equi$alpha)
 
