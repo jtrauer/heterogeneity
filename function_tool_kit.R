@@ -17,11 +17,14 @@ find_delta_from_cdr <- function(cdr, outflows, treatment_success) {
 }
 
 # very simple function to get rate from proportion and sojourn time
-find_rate_from_proportion <- function(proportion, sojourn_time) {
-  proportion / sojourn_time
+# pass parameters to similar function to simplify input code
+find_rate_from_proportion_params <- function(proportion, sojourn_time, parameters, modifier="") {
+  if (modifier == "") {
+    modifier <- 1
+    }
+  else {
+    modifier <- parameters[[modifier]]
+    }
+  parameters[[proportion]] / parameters[[sojourn_time]] * modifier
 }
 
-# pass parameters to similar function to simplify input code
-find_rate_from_proportion_params <- function(proportion, sojourn_time, parameters) {
-  parameters[[proportion]] / parameters[[sojourn_time]]
-}

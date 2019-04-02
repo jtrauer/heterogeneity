@@ -114,12 +114,12 @@ for (i in derived_params) {
 output_matrix_equi$beta1=(output_matrix_equi$beta2)*(output_matrix_equi$alpha)
 
 # compute parameters that are derived from proportions and sojourn times
-output_matrix_equi$epsilon0 <- find_rate_from_proportion(output_matrix_equi$P_epsilon * output_matrix_equi$a, output_matrix_equi$Time_L1)
-output_matrix_equi$epsilon1 <- find_rate_from_proportion(output_matrix_equi$P_epsilon * output_matrix_equi$b, output_matrix_equi$Time_L1)
-output_matrix_equi$epsilon2 <- find_rate_from_proportion(output_matrix_equi$P_epsilon * output_matrix_equi$c, output_matrix_equi$Time_L1)
-output_matrix_equi$nu0 <- find_rate_from_proportion(output_matrix_equi$P_nu * output_matrix_equi$a, output_matrix_equi$Time_L2)
-output_matrix_equi$nu1 <- find_rate_from_proportion(output_matrix_equi$P_nu * output_matrix_equi$b, output_matrix_equi$Time_L2)
-output_matrix_equi$nu2 <- find_rate_from_proportion(output_matrix_equi$P_nu * output_matrix_equi$c, output_matrix_equi$Time_L2)
+output_matrix_equi$epsilon0 <- find_rate_from_proportion_params("P_epsilon", "Time_L1", output_matrix_equi, "Time_L1")
+output_matrix_equi$epsilon1 <- find_rate_from_proportion_params("P_epsilon", "Time_L1", output_matrix_equi, "Time_L1")
+output_matrix_equi$epsilon2 <- find_rate_from_proportion_params("P_epsilon", "Time_L1", output_matrix_equi, "Time_L1")
+output_matrix_equi$nu0 <- find_rate_from_proportion_params("P_nu", "Time_L2", output_matrix_equi, "a")
+output_matrix_equi$nu1 <- find_rate_from_proportion_params("P_nu", "Time_L2", output_matrix_equi, "b")
+output_matrix_equi$nu2 <- find_rate_from_proportion_params("P_nu", "Time_L2", output_matrix_equi, "c")
 output_matrix_equi$mui0 <- find_rate_from_proportion_params("P_mui0", "Time_I", output_matrix_equi)
 output_matrix_equi$mui1 <- find_rate_from_proportion_params("P_mui1", "Time_I", output_matrix_equi)
 output_matrix_equi$mui2 <- find_rate_from_proportion_params("P_mui2", "Time_I", output_matrix_equi)
