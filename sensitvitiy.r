@@ -103,24 +103,23 @@ output_matrix_equi$delta2_b <-
                       output_matrix_equi$s)
 
 # Initial conditions for each compartment: 
-prop_I0=0.58
-prop_I1=0.31
-prop_I2=0.11
-S_init=1
-L1_init=0
-L2_init=0
+prop_I0 = 0.58
+prop_I1 = 0.31
+prop_I2 = 0.11
+S_init = 1
+L1_init = 0
+L2_init = 0
 I0_init = 1e-6 * prop_I0
 I1_init = 1e-6 * prop_I1
 I2_init = 1e-6 * prop_I2
 
-#View(output_matrix_equi)
 #Loop upto equilibrium
 for(i in 1:n_runs){
   
   #run baseline
   initial_values = c(S = S_init - I0_init - I1_init - I2_init,
                      L1 = L1_init, L2 = L2_init, I0 = I0_init, I1 = I1_init, I2 = I2_init,
-                     inc = I0_init + I1_init + I2_init)
+                     inc = 0)
   params <- as.list(c(output_matrix_equi[i,]))
   times <- seq(0, 10000)
   B_out <- as.data.frame(lsoda(initial_values, times, Baseline_model, params))
