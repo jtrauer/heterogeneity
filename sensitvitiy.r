@@ -114,37 +114,41 @@ I0_init = infectious_seed * prop_I0
 I1_init = infectious_seed * prop_I1
 I2_init = infectious_seed * prop_I2
 
+initial_model_run_duration <- 2e3
+additional_model_run_durations <- 5e2
+equilibrium_prevalence_threshold <- 1e-6
+
 # Loop up to equilibrium
 for (run in seq(n_runs)) {
   
-  #run baseline
+  # Run baseline
   initial_values = c(S = S_init - I0_init - I1_init - I2_init,
                      L1 = L1_init, L2 = L2_init, I0 = I0_init, I1 = I1_init, I2 = I2_init,
                      inc = 0)
-  params <- as.list(c(output_matrix_equi[run,]))
-  times <- seq(0, 1e4)
-  B_out <- as.data.frame(lsoda(initial_values, times, Baseline_model, params))
-  population_size <- rowSums(B_out[, 2:7])
-  incidence_B_out <- diff(B_out$inc) / population_size[-1] * 1e5
-  ChangeI <- abs(incidence_B_out[length(incidence_B_out) - 1] - incidence_B_out[length(incidence_B_out) - 2])
+  params <- as.list(c(output_matrix_equi[run, ]))
+  times <- seq(0, initial_model_run_duration)
+  baseline_output <- as.data.frame(lsoda(initial_values, times, Baseline_model, params))
+  population_size <- rowSums(baseline_output[, 2:7])
+  incidence_baseline_output <- diff(baseline_output$inc) / population_size[-1] * 1e5
+  incidence_change <- abs(incidence_baseline_output[length(incidence_baseline_output) - 1] - 
+                   incidence_baseline_output[length(incidence_baseline_output) - 2])
   
-  while(ChangeI > 1.0e-6){
-    initial_values <- c(S = min(B_out$S),
-                        L1 = max(B_out$L1), L2 = max(B_out$L2), I0 = max(B_out$I0), I1 = max(B_out$I1), I2 = max(B_out$I2),
+  # Loop over serial periods of time while checking to see if equilibrium has been reached
+  while(incidence_change > equilibrium_prevalence_threshold){
+    initial_values <- c(S = min(baseline_output$S),
+                        L1 = max(baseline_output$L1), L2 = max(baseline_output$L2), I0 = max(baseline_output$I0), I1 = max(baseline_output$I1), I2 = max(baseline_output$I2),
                         inc = 0)
-                    
-    times=seq(0, 1e3)
-    B_out <- as.data.frame(lsoda(initial_values, times, Baseline_model, params))
-    population_size <- rowSums(B_out[, 2:7])
-    incidence_B_out <- diff(B_out$inc) / population_size[-1] * 1e5
-    ChangeI <- abs(incidence_B_out[length(incidence_B_out) - 1] - incidence_B_out[length(incidence_B_out) - 2])
+    times=seq(0, additional_model_run_durations)
+    baseline_output <- as.data.frame(lsoda(initial_values, times, Baseline_model, params))
+    population_size <- rowSums(baseline_output[, 2:7])
+    incidence_baseline_output <- diff(baseline_output$inc) / population_size[-1] * 1e5
+    incidence_change <- abs(incidence_baseline_output[length(incidence_baseline_output) - 1] - 
+                     incidence_baseline_output[length(incidence_baseline_output) - 2])
   }
-  B_Incidence_time_n <- incidence_B_out[length(incidence_B_out)-1]
-  output_matrix_equi$Equi_incidence[run] <- B_Incidence_time_n
-} 
+  end_baseline_incidence <- tail(incidence_baseline_output, n=1)
+  output_matrix_equi$Equi_incidence[run] <- end_baseline_incidence
+}
 
-
-#View(output_matrix_equi) 
 #now we have incidence and each parameters in one matrix
 
 #save output as csv
