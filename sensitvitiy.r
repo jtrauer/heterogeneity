@@ -121,7 +121,7 @@ for(i in 1:n_runs){
                      L1 = L1_init, L2 = L2_init, I0 = I0_init, I1 = I1_init, I2 = I2_init,
                      inc = 0)
   params <- as.list(c(output_matrix_equi[i,]))
-  times <- seq(0, 10000)
+  times <- seq(0, 1e4)
   B_out <- as.data.frame(lsoda(initial_values, times, Baseline_model, params))
   Nq=B_out$S+B_out$L1+B_out$L2+B_out$I0+B_out$I1+B_out$I2
   
