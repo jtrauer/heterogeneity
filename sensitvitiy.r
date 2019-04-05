@@ -126,24 +126,21 @@ for (run in seq(n_runs)) {
   B_out <- as.data.frame(lsoda(initial_values, times, Baseline_model, params))
   population_size <- rowSums(B_out[, 2:7])
   incidence_B_out <- diff(B_out$inc) / population_size[-1] * 1e5
-  ChangeI = abs(incidence_B_out[length(incidence_B_out) - 1] - incidence_B_out[length(incidence_B_out) - 2])
+  ChangeI <- abs(incidence_B_out[length(incidence_B_out) - 1] - incidence_B_out[length(incidence_B_out) - 2])
   
   while(ChangeI > 1.0e-6){
     initial_values <- c(S = min(B_out$S),
                         L1 = max(B_out$L1), L2 = max(B_out$L2), I0 = max(B_out$I0), I1 = max(B_out$I1), I2 = max(B_out$I2),
                         inc = 0)
                     
-    times=seq(0, 1000, by = 1)
+    times=seq(0, 1e3)
     B_out <- as.data.frame(lsoda(initial_values, times, Baseline_model, params))
     population_size <- rowSums(B_out[, 2:7])
-    
     incidence_B_out <- diff(B_out$inc) / population_size[-1] * 1e5
-    
-    ChangeI=abs(incidence_B_out[length(incidence_B_out)-1]-
-      incidence_B_out[length(incidence_B_out)-2])
+    ChangeI <- abs(incidence_B_out[length(incidence_B_out) - 1] - incidence_B_out[length(incidence_B_out) - 2])
   }
-  B_Incidence_time_n = incidence_B_out[length(incidence_B_out)-1]
-  output_matrix_equi$Equi_incidence[run] = B_Incidence_time_n
+  B_Incidence_time_n <- incidence_B_out[length(incidence_B_out)-1]
+  output_matrix_equi$Equi_incidence[run] <- B_Incidence_time_n
 } 
 
 
