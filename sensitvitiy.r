@@ -156,14 +156,19 @@ L2_init=0
 I0_init = 1e-6 * prop_I0
 I1_init = 1e-6 * prop_I1
 I2_init = 1e-6 * prop_I2
-G = 0 # diagnosed
 
 #View(output_matrix_equi)
 #Loop upto equilibrium
 for(i in 1:n_runs){
-  #run baseline 
   
-  initial_values=c(S=S_init-(I0_init+I1_init+I2_init), L1=L1_init, L2=L2_init, I0=I0_init,I1=I1_init,I2=I2_init,inc=I0_init+I1_init+I2_init)
+  #run baseline
+  initial_values = c(S=S_init-(I0_init+I1_init+I2_init),
+                     L1=L1_init,
+                     L2=L2_init,
+                     I0=I0_init,
+                     I1=I1_init,
+                     I2=I2_init,
+                     inc=I0_init + I1_init + I2_init)
   params <- as.list(c(output_matrix_equi[i,]))
   times=seq(0, 10000, by = 1)
   B_out <- as.data.frame(lsoda(initial_values, times, Baseline_model, params))
