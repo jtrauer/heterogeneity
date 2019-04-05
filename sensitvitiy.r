@@ -55,20 +55,19 @@ Baseline_model <- function(current_timepoint, state_values, parameters)
 }
 
 
-# beginning to shift this code over to being based on lists, to avoid repeated calculations using LHS to sample from a particular window
+# beginning to shift this code over to being based on lists, to avoid repeated calculations using LHS to sample from prop_I0 particular window
 param_value_limits <- list(N= list(min = 1, max = 1),
-                           a = list(min = 0.58, max = 0.58),
-                           b = list(min = 0.31, max = 0.31),
-                           c = list(min = 0.11, max = 0.11),
-                          P_epsilon = list(min = 0.074, max = 0.128),
-                          P_nu = list(min = 0.018, max = 0.077), 
+                           prop_I0 = list(min = 0.58, max = 0.58),
+                           prop_I1 = list(min = 0.31, max = 0.31),
+                           prop_I2 = list(min = 0.11, max = 0.11),
+                           P_epsilon = list(min = 0.074, max = 0.128),
+                           P_nu = list(min = 0.018, max = 0.077), 
                            alpha = list(min = 0.22, max = 0.22),
                            mu = list(min = 1/55, max = 1/75),
-                           
-                          Time_L1=list(min = 0.167, max = 1.0),
-                          Time_L2=list(min = 20, max = 20),
-                          Time_I=list(min = 3, max = 3),
-                          P_mui0 = list(min = 0.05, max = 0.096),
+                           Time_L1=list(min = 0.167, max = 1.0),
+                           Time_L2=list(min = 20, max = 20),
+                           Time_I=list(min = 3, max = 3),
+                           P_mui0 = list(min = 0.05, max = 0.096),
                            P_mui1 = list(min = 0.05, max = 0.096),
                            P_mui2 = list(min = 0.327, max = 0.787),
                            r = list(min = 0.21, max = 0.21),
@@ -82,14 +81,14 @@ param_value_limits <- list(N= list(min = 1, max = 1),
                            p2 = list(min = 0, max = 0))
 
 # Latin hypercube sampling
-z <- 1000 # choose number of points to simulate
+n_runs <- 10 # choose number of points to simulate
 set.seed(6242015) # random number generator
 # To map these points in the unit cube to our parameters, we need minimum and maximum values for each.
 
-lhs <- maximinLHS(z, length(param_value_limits)) # simulate h= number of simulations
+lhs <- maximinLHS(n_runs, length(param_value_limits)) # simulate h= number of simulations
 
 # Initialise empty data frame with correct number of rows to store parameter values
-params_matrix <- data.frame(matrix(NA, nrow = z, ncol = 0))
+params_matrix <- data.frame(matrix(NA, nrow = n_runs, ncol = 0))
 
 # Populate the parameter data frame sequentially by column from lhs sampling
 parameter_names <- names(param_value_limits)
@@ -108,16 +107,16 @@ for (i in derived_params) {
   output_matrix_equi[[i]] <- NA
 }
 
-#compute beta1
+# compute beta1
 output_matrix_equi$beta1 = output_matrix_equi$beta2 * output_matrix_equi$alpha
 
 # compute parameters that are derived from proportions and sojourn times
 output_matrix_equi$epsilon0 <- find_rate_from_proportion_params("P_epsilon", "Time_L1", output_matrix_equi, "Time_L1")
 output_matrix_equi$epsilon1 <- find_rate_from_proportion_params("P_epsilon", "Time_L1", output_matrix_equi, "Time_L1")
 output_matrix_equi$epsilon2 <- find_rate_from_proportion_params("P_epsilon", "Time_L1", output_matrix_equi, "Time_L1")
-output_matrix_equi$nu0 <- find_rate_from_proportion_params("P_nu", "Time_L2", output_matrix_equi, "a")
-output_matrix_equi$nu1 <- find_rate_from_proportion_params("P_nu", "Time_L2", output_matrix_equi, "b")
-output_matrix_equi$nu2 <- find_rate_from_proportion_params("P_nu", "Time_L2", output_matrix_equi, "c")
+output_matrix_equi$nu0 <- find_rate_from_proportion_params("P_nu", "Time_L2", output_matrix_equi, "prop_I0")
+output_matrix_equi$nu1 <- find_rate_from_proportion_params("P_nu", "Time_L2", output_matrix_equi, "prop_I1")
+output_matrix_equi$nu2 <- find_rate_from_proportion_params("P_nu", "Time_L2", output_matrix_equi, "prop_I2")
 output_matrix_equi$mui0 <- find_rate_from_proportion_params("P_mui0", "Time_I", output_matrix_equi)
 output_matrix_equi$mui1 <- find_rate_from_proportion_params("P_mui1", "Time_I", output_matrix_equi)
 output_matrix_equi$mui2 <- find_rate_from_proportion_params("P_mui2", "Time_I", output_matrix_equi)
@@ -125,16 +124,12 @@ output_matrix_equi$h <- find_rate_from_proportion_params("P_h", "Time_I", output
 output_matrix_equi$j <- find_rate_from_proportion_params("P_h", "Time_I", output_matrix_equi)
 
 # other parameter calculations that have now changed
-output_matrix_equi$kappa <-1/output_matrix_equi$Time_L1-(output_matrix_equi$P_epsilon/output_matrix_equi$Time_L1+output_matrix_equi$mu)  
-output_matrix_equi$gamma0=1/output_matrix_equi$Time_I-
-  (output_matrix_equi$mu+output_matrix_equi$h+output_matrix_equi$mui0)
-output_matrix_equi$gamma1=1/output_matrix_equi$Time_I-
-  (output_matrix_equi$mu+output_matrix_equi$j+output_matrix_equi$mui1)
-output_matrix_equi$gamma2=1/output_matrix_equi$Time_I-
-  (output_matrix_equi$mui2+output_matrix_equi$mu)
+output_matrix_equi$kappa <- 1 / output_matrix_equi$Time_L1 - (output_matrix_equi$P_epsilon / output_matrix_equi$Time_L1 + output_matrix_equi$mu)
+output_matrix_equi$gamma0 <- 1 / output_matrix_equi$Time_I - (output_matrix_equi$mu + output_matrix_equi$h + output_matrix_equi$mui0)
+output_matrix_equi$gamma1 <- 1 / output_matrix_equi$Time_I - (output_matrix_equi$mu + output_matrix_equi$j + output_matrix_equi$mui1)
+output_matrix_equi$gamma2 <- 1 / output_matrix_equi$Time_I - (output_matrix_equi$mui2 + output_matrix_equi$mu)
 
-
-#compute baseline delta
+# compute baseline deltas
 output_matrix_equi$delta0_b <-
   find_delta_from_cdr(output_matrix_equi$cdr_b, 
                       output_matrix_equi$gamma0 + output_matrix_equi$mui0 +
@@ -151,25 +146,24 @@ output_matrix_equi$delta2_b <-
                         output_matrix_equi$mu,
                       output_matrix_equi$s)
 
-#View(output_matrix_equi)
-## Initial values for sub population: 
-a=0.58 #proportion for I0
-b=0.31 #proportion for I1
-c=0.11 #proportion for I2
-A=1 #Fully susceptible hosts
-B=0 #Early latent hosts
-C=0 #Late latent hosts
-D=1e-6*a #active TB hosts proportion of extrapulmonary 15% of all infectious 
-E=1e-6*b # active TB Normal spreaders
-F=1e-6*c # active TB Super-spreader 10% of TB patients are super-spreaders
-G=0 # diagnosed 
+# Initial conditions for each compartment: 
+prop_I0=0.58
+prop_I1=0.31
+prop_I2=0.11
+S_init=1
+L1_init=0
+L2_init=0
+I0_init = 1e-6 * prop_I0
+I1_init = 1e-6 * prop_I1
+I2_init = 1e-6 * prop_I2
+G = 0 # diagnosed
 
 #View(output_matrix_equi)
 #Loop upto equilibrium
-for(i in 1:z){
+for(i in 1:n_runs){
   #run baseline 
   
-  initial_values=c(S=A-(D+E+F), L1=B, L2=C, I0=D,I1=E,I2=F,inc=D+E+F)
+  initial_values=c(S=S_init-(I0_init+I1_init+I2_init), L1=L1_init, L2=L2_init, I0=I0_init,I1=I1_init,I2=I2_init,inc=I0_init+I1_init+I2_init)
   params <- as.list(c(output_matrix_equi[i,]))
   times=seq(0, 10000, by = 1)
   B_out <- as.data.frame(lsoda(initial_values, times, Baseline_model, params))
