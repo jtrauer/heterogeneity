@@ -37,7 +37,7 @@ param_value_limits <- list(N= list(min = 1, max = 1),
                            p2 = list(min = 0, max = 0))
 
 # Latin hypercube sampling
-n_runs <- 10 # choose number of points to simulate
+n_runs <- 2 # choose number of points to simulate
 set.seed(6242015) # random number generator
 # To map these points in the unit cube to our parameters, we need minimum and maximum values for each.
 
@@ -115,38 +115,35 @@ I1_init = infectious_seed * prop_I1
 I2_init = infectious_seed * prop_I2
 
 #Loop upto equilibrium
-for(i in 1:n_runs){
+for(run in 1:n_runs){
   
   #run baseline
   initial_values = c(S = S_init - I0_init - I1_init - I2_init,
                      L1 = L1_init, L2 = L2_init, I0 = I0_init, I1 = I1_init, I2 = I2_init,
                      inc = 0)
-  params <- as.list(c(output_matrix_equi[i,]))
+  params <- as.list(c(output_matrix_equi[run,]))
   times <- seq(0, 1e4)
   B_out <- as.data.frame(lsoda(initial_values, times, Baseline_model, params))
-  Nq=B_out$S+B_out$L1+B_out$L2+B_out$I0+B_out$I1+B_out$I2
+  population_size <- rowSums(B_out[, 2:7])
+  incidence_B_out <- diff(B_out$inc) / population_size * 1e5
+  ChangeI = abs(incidence_B_out[length(incidence_B_out)-1] - incidence_B_out[length(incidence_B_out)-2])
   
-  incidence_B_out=(diff(B_out$inc)/Nq)*100000
-  
-  ChangeI=abs(incidence_B_out[length(incidence_B_out)-1]-
-    incidence_B_out[length(incidence_B_out)-2])
-  
-  while(ChangeI>1.0e-6){
+  while(ChangeI > 1.0e-6){
     initial_values=c(S=min(B_out$S),L1=max(B_out$L1),L2=max(B_out$L2),I0=max(B_out$I0),
                      I1=max(B_out$I1),I2=max(B_out$I2),inc=max(B_out$I0)+max(B_out$I1)+max(B_out$I2))
                     
     times=times=seq(0, 1000, by = 1)
     B_out <- as.data.frame(lsoda(initial_values, times, Baseline_model, params))
-    Nq=B_out$S+B_out$L1+B_out$L2+B_out$I0+B_out$I1+B_out$I2
+    population_size <- rowSums(B_out[, 2:7])
     
-    incidence_B_out=(diff(B_out$inc)/Nq)*100000
+    incidence_B_out=(diff(B_out$inc)/population_size)*100000
     
     ChangeI=abs(incidence_B_out[length(incidence_B_out)-1]-
       incidence_B_out[length(incidence_B_out)-2])
   }
   B_Incidence_time_n = incidence_B_out[length(incidence_B_out)-1] #
   
-  output_matrix_equi$Equi_incidence[i] = B_Incidence_time_n
+  output_matrix_equi$Equi_incidence[run] = B_Incidence_time_n
   
 } 
 
