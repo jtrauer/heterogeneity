@@ -109,9 +109,10 @@ prop_I2 = 0.11
 S_init = 1
 L1_init = 0
 L2_init = 0
-I0_init = 1e-6 * prop_I0
-I1_init = 1e-6 * prop_I1
-I2_init = 1e-6 * prop_I2
+infectious_seed = 1e-6
+I0_init = infectious_seed * prop_I0
+I1_init = infectious_seed * prop_I1
+I2_init = infectious_seed * prop_I2
 
 #Loop upto equilibrium
 for(i in 1:n_runs){
