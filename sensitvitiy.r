@@ -12,25 +12,25 @@ source("model_functions.R")
 # SENSITIVITY ANALYSIS
 
 # beginning to shift this code over to being based on lists, to avoid repeated calculations using LHS to sample from prop_I0 particular window
-param_value_limits <- list(N= list(min = 1, max = 1),
+param_value_limits <- list(N = list(min = 1, max = 1),
                            prop_I0 = list(min = 0.58, max = 0.58),
                            prop_I1 = list(min = 0.31, max = 0.31),
                            prop_I2 = list(min = 0.11, max = 0.11),
                            P_epsilon = list(min = 0.074, max = 0.128),
                            P_nu = list(min = 0.018, max = 0.077), 
                            alpha = list(min = 0.22, max = 0.22),
-                           mu = list(min = 1/55, max = 1/75),
-                           Time_L1=list(min = 0.167, max = 1.0),
-                           Time_L2=list(min = 20, max = 20),
-                           Time_I=list(min = 3, max = 3),
+                           mu = list(min = 1 / 55, max = 1 / 75),
+                           Time_L1 = list(min = 0.167, max = 1.0),
+                           Time_L2 = list(min = 20, max = 20),
+                           Time_I = list(min = 3, max = 3),
                            P_mui0 = list(min = 0.05, max = 0.096),
                            P_mui1 = list(min = 0.05, max = 0.096),
                            P_mui2 = list(min = 0.327, max = 0.787),
                            r = list(min = 0.21, max = 0.21),
                            beta0 = list(min = 0, max = 0),
                            beta2 = list(min = 40, max = 60),
-                           cdr_b = list(min = 0.5, max = 0.8),#baseline CDR
-                           s = list(min = 0.8, max = 0.8),#Rx success
+                           cdr_b = list(min = 0.5, max = 0.8), # baseline CDR
+                           treatment_success = list(min = 0.8, max = 0.8),
                            P_h = list(min = 0.0, max = 0.058),
                            P_j = list(min = 0.0, max = 0.058),
                            p1 = list(min = 0, max = 0),
@@ -90,17 +90,17 @@ output_matrix_equi$delta0_b <-
   find_delta_from_cdr(output_matrix_equi$cdr_b, 
                       output_matrix_equi$gamma0 + output_matrix_equi$mui0 +
                         output_matrix_equi$mu + output_matrix_equi$h, 
-                      output_matrix_equi$s)
+                      output_matrix_equi$treatment_success)
 output_matrix_equi$delta1_b <-
   find_delta_from_cdr(output_matrix_equi$cdr_b,
                       output_matrix_equi$gamma1 + output_matrix_equi$mui1 + 
                         output_matrix_equi$mu + output_matrix_equi$j, 
-                      output_matrix_equi$s)
+                      output_matrix_equi$treatment_success)
 output_matrix_equi$delta2_b <-
   find_delta_from_cdr(output_matrix_equi$cdr_b,
                       output_matrix_equi$gamma2 + output_matrix_equi$mui2 + 
                         output_matrix_equi$mu,
-                      output_matrix_equi$s)
+                      output_matrix_equi$treatment_success)
 
 # Initial conditions for each compartment: 
 prop_I0 = 0.58
