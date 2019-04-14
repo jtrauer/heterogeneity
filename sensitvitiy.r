@@ -80,7 +80,7 @@ output_matrix_equi$h <- find_rate_from_proportion_params("P_h", "Time_I", output
 output_matrix_equi$j <- find_rate_from_proportion_params("P_h", "Time_I", output_matrix_equi)
 
 # other parameter calculations that have now changed
-output_matrix_equi$kappa <- 1 / output_matrix_equi$Time_L1 - (output_matrix_equi$P_epsilon / output_matrix_equi$Time_L1 + output_matrix_equi$mu)
+output_matrix_equi$kappa <- (1 - output_matrix_equi$P_epsilon) / output_matrix_equi$Time_L1 - output_matrix_equi$mu
 output_matrix_equi$gamma0 <- 1 / output_matrix_equi$Time_I - (output_matrix_equi$mu + output_matrix_equi$h + output_matrix_equi$mui0)
 output_matrix_equi$gamma1 <- 1 / output_matrix_equi$Time_I - (output_matrix_equi$mu + output_matrix_equi$j + output_matrix_equi$mui1)
 output_matrix_equi$gamma2 <- 1 / output_matrix_equi$Time_I - (output_matrix_equi$mui2 + output_matrix_equi$mu)
