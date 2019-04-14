@@ -103,16 +103,13 @@ output_matrix_equi$delta2_b <-
                       output_matrix_equi$treatment_success)
 
 # Initial conditions for each compartment: 
-prop_I0 = 0.58
-prop_I1 = 0.31
-prop_I2 = 0.11
 S_init = 1
 L1_init = 0
 L2_init = 0
 infectious_seed = 1e-6
-I0_init = infectious_seed * prop_I0
-I1_init = infectious_seed * prop_I1
-I2_init = infectious_seed * prop_I2
+I0_init = infectious_seed * output_matrix_equi$prop_I0
+I1_init = infectious_seed * output_matrix_equi$prop_I1
+I2_init = infectious_seed * output_matrix_equi$prop_I2
 
 initial_model_run_duration <- 2e3
 additional_model_run_durations <- 5e2
