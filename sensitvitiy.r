@@ -107,9 +107,9 @@ S_init = 1
 L1_init = 0
 L2_init = 0
 infectious_seed = 1e-6
-I0_init = infectious_seed * output_matrix_equi$prop_I0
-I1_init = infectious_seed * output_matrix_equi$prop_I1
-I2_init = infectious_seed * output_matrix_equi$prop_I2
+I0_init = infectious_seed * output_matrix_equi$prop_I0[1]
+I1_init = infectious_seed * output_matrix_equi$prop_I1[1]
+I2_init = infectious_seed * output_matrix_equi$prop_I2[1]
 
 initial_model_run_duration <- 2e3
 additional_model_run_durations <- 5e2
@@ -117,6 +117,7 @@ equilibrium_prevalence_threshold <- 1e-6
 
 # Loop up to equilibrium
 for (run in seq(n_runs)) {
+  
   
   # Run baseline
   initial_values = c(S = S_init - I0_init - I1_init - I2_init,
