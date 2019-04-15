@@ -7,9 +7,7 @@ Abbreviated_Model <- function(current_timepoint, state_values, parameters)
   S=state_values[1] # fully susceptible 
   L1=state_values[2] # early latency
   L2=state_values[3] # late latency
-  I0=state_values[4] # infectious non-spreaders
-  I1=state_values[5] # infectious spreaders
-  I2=state_values[6] # infectious super-spreaders
+  I=state_values[4] # infectious non-spreaders
 
     with(
       as.list(parameters), #variable names within parameters can be used
@@ -18,18 +16,16 @@ Abbreviated_Model <- function(current_timepoint, state_values, parameters)
         N <- sum(state_values)
         
         #compute derivative
-        dS = mu * N - beta2 * S * I2 / N - 
+        dS = mu * N - beta * S * I / N - 
           mu * S
-        dL1 = beta2 * S * I2 / N - 
+        dL1 = beta * S * I / N - 
           (kappa + mu) * L1
         dL2 = kappa * L1 - 
           mu * L2
-        dI0 = - mu * I0
-        dI1 = - mu * I1
-        dI2 = - mu * I2
+        dI = - mu * I
 
         #combine results
-        results = c(dS, dL1, dL2, dI0, dI1, dI2)
+        results = c(dS, dL1, dL2, dI)
         list(results)
       }
     )
@@ -56,7 +52,7 @@ Baseline_model <- function(current_timepoint, state_values, parameters)
         delta0_b * I0 + delta1_b * I1 + delta2_b * I2 +
         r * (p1 * beta1 * I1 + p2 * beta2 * I2) / N * L2 - 
         (beta0 * I0 + (1 - p1) * beta1 * I1 + (1 - p2) * beta2 * I2) / N * S -
-        mu*S
+        mu * S
       dL1 = (beta0 * I0 + (1 - p1) * beta1 * I1 + (1 - p2) * beta2 * I2) / N * S +
         r * (beta0 * I0 + (1 - p1) * beta1 * I1 + (1 - p2) * beta2 * I2) / N * L2 -
         (epsilon0 + epsilon1 + epsilon2 + mu + kappa) * L1
