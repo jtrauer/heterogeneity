@@ -3,18 +3,27 @@
 
 Abbreviated_Model <- function(current_timepoint, state_values, parameters)
   {
-    # create state variables (local variables)
-    S=state_values[1] #fully susceptible 
+  # create state variables (local variables)
+  S=state_values[1] #fully susceptible 
+  L1=state_values[2] #early latency
+  L2=state_values[3] #late latency
+  I0=state_values[4] #infectious non-spreaders
+  I1=state_values[5] #infectious spreaders
+  I2=state_values[6] #infectious Super-spreaders
 
     with(
       as.list(parameters), #variable names within parameters can be used
       {
         #compute derivative
         dS = -0.1 * S
-        dI = 0.1 * S
+        dL1 = 0
+        dL2 = 0
+        dI0 = 0.1 * S
+        dI1 = 0
+        dI2 = 0
 
         #combine results
-        results = c(dS, dI)
+        results = c(dS, dL1, dL2, dI0, dI1, dI2)
         list(results)
       }
     )
