@@ -18,12 +18,12 @@ Abbreviated_Model <- function(current_timepoint, state_values, parameters)
         N <- sum(state_values)
         
         #compute derivative
-        dS = mu * N - beta2 * S * I0 / N
-        dL1 = 0
-        dL2 = 0
-        dI0 = beta2 * S * I0 / N
-        dI1 = 0
-        dI2 = 0
+        dS = mu * N - beta2 * S * I2 / N - mu * S
+        dL1 = - mu * L1
+        dL2 = - mu * L2
+        dI0 = - mu * I0
+        dI1 = - mu * I1
+        dI2 = beta2 * S * I2 / N - mu * I2
 
         #combine results
         results = c(dS, dL1, dL2, dI0, dI1, dI2)
