@@ -17,7 +17,8 @@ params <- list(
             P_mui = 0.787,
             beta = 30,
             cdr_b = 0.8,
-            treatment_success = 0.8)
+            treatment_success = 0.8,
+            r = 0.21)
 
 # parameter processing
 params$epsilon <- params$P_epsilon / params$Time_L1
@@ -26,9 +27,9 @@ params$nu <- params$P_nu / params$Time_L2
 params$universal_death_rate <- params$mu
 params$mui <- params$P_mui / params$Time_I
 params$gamma <- (1 - params$P_mui) / params$Time_I
+params$beta_reinfection <- params$beta * params$r
 
 params$delta <- find_delta_from_cdr(params$cdr_b, params$gamma + params$mu, 1)
-print(params$delta)
 
 # model intial conditions and integration time specification
 S_init = 1
@@ -47,6 +48,7 @@ print(yaye_version$I)
 # summer version
 summer_version <- EpiModel$new(times, names(initial_values), as.list(initial_values), params,
                               list(c("infection_frequency", "beta", "S", "L1"),
+                                   c("infection_frequency", "beta_reinfection", "L2", "L1"),
                                    c("standard_flows", "kappa", "L1", "L2"),
                                    c("standard_flows", "epsilon", "L1", "I"),
                                    c("standard_flows", "nu", "L2", "I"),

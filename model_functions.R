@@ -20,11 +20,11 @@ Abbreviated_Model <- function(current_timepoint, state_values, parameters)
           delta * I -
           beta * S * I / N - 
           mu * S
-        dL1 = beta * S * I / N - 
+        dL1 = (beta * S + beta * r * L2) * I / N - 
           (epsilon + kappa + mu) * L1
         dL2 = kappa * L1 + 
           gamma * I - 
-          (nu + mu) * L2
+          (beta * r * I + nu + mu) * L2
         dI = epsilon * L1 + 
           nu * L2 - 
           (gamma + delta + mu) * I
