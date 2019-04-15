@@ -12,8 +12,7 @@ adjust_lhs_to_range <- function(input_value, parameter_name, parameter_ranges) {
 # find the flow rate of delta based on a case detection rate (proportion), other outflows
 # from the compartment and a final adjustment for the treatment success rate (proportion)
 find_delta_from_cdr <- function(cdr, outflows, treatment_success) {
-  output_matrix_equi$delta0_b <- 
-    cdr * outflows / (1 - cdr) * treatment_success
+  cdr * outflows / (1 - cdr) * treatment_success
 }
 
 # very simple function to get rate from proportion and sojourn time
