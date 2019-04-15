@@ -30,6 +30,8 @@ params <- list(N = 1,
             universal_death_rate = 1 / 75,
             place_holder = .1)
 
+params$kappa <- (1 - params$P_epsilon) / params$Time_L1
+
 S_init = 1
 L1_init = 0
 L2_init = 0
@@ -46,7 +48,8 @@ baseline_output <- as.data.frame(lsoda(initial_values, times, Abbreviated_Model,
 print(baseline_output$I2)
 
 summer_output <- EpiModel$new(times, names(initial_values), as.list(initial_values), params,
-                              list(c("infection_frequency", "beta2", "S", "I2")),
+                              list(c("infection_frequency", "beta2", "S", "L1"),
+                                   c("standard_flows", "kappa", "L1", "L2")),
                               infectious_compartment="I2", initial_conditions_sum_to_total = FALSE, report_progress = FALSE, 
                               birth_approach = "replace_deaths", entry_compartment = "S")
 
