@@ -14,11 +14,14 @@ Abbreviated_Model <- function(current_timepoint, state_values, parameters)
     with(
       as.list(parameters), #variable names within parameters can be used
       {
+        
+        N <- sum(state_values)
+        
         #compute derivative
-        dS = -0.1 * S
+        dS = mu * N - beta2 * S * I0 / N
         dL1 = 0
         dL2 = 0
-        dI0 = 0.1 * S
+        dI0 = beta2 * S * I0 / N
         dI1 = 0
         dI2 = 0
 

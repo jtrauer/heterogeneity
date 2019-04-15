@@ -30,19 +30,21 @@ S_init = 1
 L1_init = 0
 L2_init = 0
 infectious_seed = 1e-6
+prop_I0 = 0.58
 I0_init = infectious_seed * prop_I0
 I1_init = infectious_seed * prop_I1
 I2_init = infectious_seed * prop_I2
-initial_values = c(S = S_init - I0_init - I1_init - I2_init, L1 = 0, L2 = 0, I0 = 0, I1 = 0, I2 = 0)
+initial_values = c(S = S_init - I0_init - I1_init - I2_init, L1 = 0, L2 = 0, I0 = I0_init, I1 = 0, I2 = 0)
 initial_model_run_duration <- 1e2
 times <- seq(0, initial_model_run_duration)
 baseline_output <- as.data.frame(lsoda(initial_values, times, Abbreviated_Model, params))
 
 print(baseline_output$I0)
 
-summer_output <- EpiModel$new(times, names(initial_values), as.list(initial_values), params, list(c("standard_flows", "place_holder", "S", "I0")), 
+summer_output <- EpiModel$new(times, names(initial_values), as.list(initial_values), params,
+                              list(c("infection_frequency", "beta2", "S", "I0")),
                               infectious_compartment="I0", initial_conditions_sum_to_total = FALSE, report_progress = FALSE, 
-                              birth_approach = "no_births", entry_compartment = "S")
+                              birth_approach = "add_crude_birth_rate", entry_compartment = "S")
 
 summer_output$run_model()
 
