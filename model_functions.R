@@ -8,21 +8,23 @@ Abbreviated_Model <- function(current_timepoint, state_values, parameters)
   L1=state_values[2] # early latency
   L2=state_values[3] # late latency
   I=state_values[4] # infectious non-spreaders
+  
+  N <- sum(state_values)
 
     with(
       as.list(parameters), #variable names within parameters can be used
       {
         
-        N <- sum(state_values)
-        
         #compute derivative
-        dS = mu * N - beta * S * I / N - 
+        dS = mu * N -
+          beta * S * I / N - 
           mu * S
         dL1 = beta * S * I / N - 
-          (kappa + mu) * L1
+          (epsilon + kappa + mu) * L1
         dL2 = kappa * L1 - 
           mu * L2
-        dI = - mu * I
+        dI = epsilon * L1 - 
+          mu * I
 
         #combine results
         results = c(dS, dL1, dL2, dI)
