@@ -1,6 +1,27 @@
 
 # Planning to move all the functions that represent the acgtual model to be run to this file - to avoid duplication
 
+Abbreviated_Model <- function(current_timepoint, state_values, parameters)
+  {
+    # create state variables (local variables)
+    S=state_values[1] #fully susceptible 
+
+    with(
+      as.list(parameters), #variable names within parameters can be used
+      {
+        #compute derivative
+        dS = -0.1 * S
+        dI = 0.1 * S
+
+        #combine results
+        results = c(dS, dI)
+        list(results)
+      }
+    )
+  }
+  
+
+
 # Model Func
 Baseline_model <- function(current_timepoint, state_values, parameters)
 {
