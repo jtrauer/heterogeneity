@@ -29,6 +29,7 @@ params <- list(N = 1,
 
 params$epsilon <- params$P_epsilon / params$Time_L1
 params$kappa <- (1 - params$P_epsilon) / params$Time_L1
+params$nu <- params$P_nu / params$Time_L2
 
 
 S_init = 1
@@ -42,6 +43,7 @@ times <- seq(0, initial_model_run_duration)
 
 # yaye version
 yaye_version <- as.data.frame(lsoda(initial_values, times, Abbreviated_Model, params))
+print("yaye version")
 print(yaye_version$I)
 
 
@@ -49,12 +51,13 @@ print(yaye_version$I)
 summer_version <- EpiModel$new(times, names(initial_values), as.list(initial_values), params,
                               list(c("infection_frequency", "beta", "S", "L1"),
                                    c("standard_flows", "kappa", "L1", "L2"),
-                                   c("standard_flows", "epsilon", "L1", "I")),
+                                   c("standard_flows", "epsilon", "L1", "I"),
+                                   c("standard_flows", "nu", "L2", "I")),
                               infectious_compartment="I", initial_conditions_sum_to_total = FALSE, report_progress = FALSE, 
                               birth_approach = "replace_deaths", entry_compartment = "S")
 
 summer_version$run_model()
-
+print("summer version")
 print(summer_version$outputs$I)
 
 
