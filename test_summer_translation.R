@@ -22,8 +22,14 @@ params <- list(
 
 # parameter processing
 params$epsilon <- params$P_epsilon / params$Time_L1
+
+# params$epsilon <- 0
+
 params$kappa <- (1 - params$P_epsilon) / params$Time_L1
 params$nu <- params$P_nu / params$Time_L2
+
+# params$nu <- 0
+
 params$universal_death_rate <- params$mu
 params$mui <- params$P_mui / params$Time_I
 params$gamma <- (1 - params$P_mui) / params$Time_I
@@ -35,15 +41,21 @@ params$delta <- find_delta_from_cdr(params$cdr_b, params$gamma + params$mu, 1)
 S_init = 1
 L1_init = 0
 L2_init = 0
-I_init = 1e-6
+I_init = .2
 initial_values = c(S = S_init - I_init, L1 = 0, L2 = 0, I = I_init)
+initial_values_yaye_version <- c(S = S_init - I_init, L1 = 0, L2 = 0, I0 = I_init / 3, I1 = I_init / 3, I2 = I_init / 3)
 initial_model_run_duration <- 1e2
 times <- seq(0, initial_model_run_duration)
 
-# yaye version
-yaye_version <- as.data.frame(lsoda(initial_values, times, Abbreviated_Model, params))
-print("yaye version")
-print(yaye_version$I)
+# yaye version old
+# yaye_version <- as.data.frame(lsoda(initial_values, times, Abbreviated_Model_old, params))
+# print("yaye version")
+# print(yaye_version$I)
+
+# # yaye version new
+# yaye_version <- as.data.frame(lsoda(initial_values_yaye_version, times, Abbreviated_Model, params))
+# print("yaye version new")
+# print(yaye_version$I0 + yaye_version$I2 + yaye_version$I2)
 
 # summer version
 summer_version <- EpiModel$new(times, names(initial_values), as.list(initial_values), params,
@@ -54,12 +66,19 @@ summer_version <- EpiModel$new(times, names(initial_values), as.list(initial_val
                                    c("standard_flows", "nu", "L2", "I"),
                                    c("standard_flows", "gamma", "I", "L2"),
                                    c("standard_flows", "delta", "I", "S")),
-                              infectious_compartment="I", initial_conditions_sum_to_total = FALSE, report_progress = FALSE, 
+                              infectious_compartment="I", initial_conditions_sum_to_total = FALSE, report_progress = FALSE, reporting_sigfigs = 6,
                               birth_approach = "replace_deaths", entry_compartment = "S")
+
+summer_version$stratify("infect", seq(0, 2), c("I"), report = FALSE)
+# print(summer_version$flows)
 
 summer_version$run_model()
 print("summer version")
-print(summer_version$outputs$I)
+
+# print(summer_version$outputs$I)
+
+
+print(summer_version$outputs$IXinfect_0 + summer_version$outputs$IXinfect_1 + summer_version$outputs$IXinfect_2)
 
 
 

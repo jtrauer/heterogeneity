@@ -7,8 +7,10 @@ Abbreviated_Model <- function(current_timepoint, state_values, parameters)
   S=state_values[1] # fully susceptible 
   L1=state_values[2] # early latency
   L2=state_values[3] # late latency
-  I=state_values[4] # infectious non-spreaders
-  
+  I0=state_values[4] # infectious non-spreaders
+  I1=state_values[5] # infectious non-spreaders
+  I2=state_values[6] # infectious non-spreaders
+    
   N <- sum(state_values)
 
     with(
@@ -17,25 +19,75 @@ Abbreviated_Model <- function(current_timepoint, state_values, parameters)
         
         #compute derivative
         dS = mu * N + 
-          delta * I -
-          beta * S * I / N - 
+          delta * (I0 + I1 + I2) -
+          beta * S * (I0 + I1 + I2) / N - 
           mu * S
-        dL1 = (beta * S + beta * r * L2) * I / N - 
+        
+        dL1 = (beta * S + beta * r * L2) * (I0 + I1 + I2) / N - 
           (epsilon + kappa + mu) * L1
+        
         dL2 = kappa * L1 + 
-          gamma * I - 
-          (beta * r * I + nu + mu) * L2
-        dI = epsilon * L1 + 
-          nu * L2 - 
-          (gamma + delta + mu) * I
+          gamma * (I0 + I1 + I2) - 
+          (beta * r * (I0 + I1 + I2) + nu + mu) * L2
+        
+        dI0 = epsilon * L1 / 3 + 
+          nu * L2 / 3 - 
+          (gamma + delta + mu) * I0
+        
+        dI1 = epsilon * L1 / 3 + 
+          nu * L2 / 3 - 
+          (gamma + delta + mu) * I1
+        
+        dI2 = epsilon * L1 / 3 + 
+          nu * L2 / 3 - 
+          (gamma + delta + mu) * I2
 
         #combine results
-        results = c(dS, dL1, dL2, dI)
+        results = c(dS, dL1, dL2, dI0, dI1, dI2)
         list(results)
       }
     )
   }
   
+
+Abbreviated_Model_old <- function(current_timepoint, state_values, parameters)
+{
+  # create state variables (local variables)
+  S=state_values[1] # fully susceptible 
+  L1=state_values[2] # early latency
+  L2=state_values[3] # late latency
+  I=state_values[4] # infectious non-spreaders
+
+  N <- sum(state_values)
+  
+  with(
+    as.list(parameters), #variable names within parameters can be used
+    {
+      
+      #compute derivative
+      dS = mu * N + 
+        delta * I -
+        beta * S * I / N - 
+        mu * S
+      
+      dL1 = (beta * S + beta * r * L2) * I / N - 
+        (epsilon + kappa + mu) * L1
+      
+      dL2 = kappa * L1 +
+        gamma * I - 
+        (beta * r * I + nu + mu) * L2
+      
+      dI = epsilon * L1 + 
+        nu * L2 - 
+        (gamma + delta + mu) * I
+      
+      #combine results
+      results = c(dS, dL1, dL2, dI)
+      list(results)
+    }
+  )
+}
+
 
 
 # Model Func
