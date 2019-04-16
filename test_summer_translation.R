@@ -1,8 +1,10 @@
 
+setwd("//ad.monash.edu/home/User096/jtrauer/Documents/GitHub/heterogeneity")
 source("model_functions.R")
 source("function_tool_kit.R")
 local_repo_directory <- getwd()
-setwd("C:/Users/jtrauer/Desktop/summer")
+# setwd("C:/Users/jtrauer/Desktop/summer")
+setwd("//ad.monash.edu/home/User096/jtrauer/Documents/GitHub/summer")
 source("summer_model.R")
 setwd(local_repo_directory)
 
