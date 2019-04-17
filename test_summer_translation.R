@@ -47,7 +47,7 @@ params$delta <- find_delta_from_cdr(params$cdr_b, params$gamma + params$mu, 1)
 S_init = 1
 L1_init = 0
 L2_init = 0
-I_init = .2
+I_init = 1e-6
 initial_values = c(S = S_init - I_init, L1 = 0, L2 = 0, I = I_init)
 initial_values_yaye_version <- c(S = S_init - I_init, L1 = 0, L2 = 0, I0 = I_init / 3, I1 = I_init / 3, I2 = I_init / 3)
 initial_model_run_duration <- 1e2
@@ -76,9 +76,12 @@ summer_version <- EpiModel$new(times, names(initial_values), as.list(initial_val
                               birth_approach = "replace_deaths", entry_compartment = "S")
 
 summer_version$stratify("infect", seq(0, 2), c("I"), 
-                        list(epsilon=list(adjustments=list("0"=params$prop_I0 * params$epsilon,
-                                                           "1"=params$prop_I1 * params$epsilon,
-                                                           "2"=params$prop_I2 * params$epsilon))), 
+                        list(epsilon=list(adjustments=list("0"=params$prop_I0,
+                                                           "1"=params$prop_I1,
+                                                           "2"=params$prop_I2)),
+                             nu=list(adjustments=list("0"=params$prop_I0,
+                                                      "1"=params$prop_I1,
+                                                      "2"=params$prop_I2))),
                         report = FALSE)
 # print(summer_version$flows)
 
