@@ -87,6 +87,9 @@ summer_version$stratify("infect", seq(0, 2), c("I"),
                              nu=list(adjustments=list("0"=params$prop_I0,
                                                       "1"=params$prop_I1,
                                                       "2"=params$prop_I2))),
+                        infectiousness_adjustments = c("0"=0,
+                                                       "1"=0.21,
+                                                       "2"=1),
                         report = FALSE)
 
 
