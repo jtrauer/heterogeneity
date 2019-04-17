@@ -17,9 +17,6 @@ Abbreviated_Model <- function(current_timepoint, state_values, parameters)
       as.list(parameters), #variable names within parameters can be used
       {
         
-        print(prop_I0)
-        
-        
         #compute derivative
         dS = mu * N + 
           delta * (I0 + I1 + I2) -
