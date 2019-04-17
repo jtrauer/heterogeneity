@@ -1,10 +1,11 @@
 
-setwd("//ad.monash.edu/home/User096/jtrauer/Documents/GitHub/heterogeneity")
+# setwd("//ad.monash.edu/home/User096/jtrauer/Documents/GitHub/heterogeneity")
+setwd("C://Users/jtrauer/Desktop/heterogeneity/heterogeneity")
 source("model_functions.R")
 source("function_tool_kit.R")
 local_repo_directory <- getwd()
-# setwd("C:/Users/jtrauer/Desktop/summer")
-setwd("//ad.monash.edu/home/User096/jtrauer/Documents/GitHub/summer")
+setwd("C:/Users/jtrauer/Desktop/summer")
+# setwd("//ad.monash.edu/home/User096/jtrauer/Documents/GitHub/summer")
 source("summer_model.R")
 setwd(local_repo_directory)
 
@@ -20,7 +21,10 @@ params <- list(
             beta = 30,
             cdr_b = 0.8,
             treatment_success = 0.8,
-            r = 0.21)
+            r = 0.21,
+            prop_I0 = 0.58,
+            prop_I1 = 0.31,
+            prop_I2 = 0.11)
 
 # parameter processing
 params$epsilon <- params$P_epsilon / params$Time_L1
@@ -54,10 +58,10 @@ times <- seq(0, initial_model_run_duration)
 # print("yaye version")
 # print(yaye_version$I)
 
-# # yaye version new
-# yaye_version <- as.data.frame(lsoda(initial_values_yaye_version, times, Abbreviated_Model, params))
-# print("yaye version new")
-# print(yaye_version$I0 + yaye_version$I2 + yaye_version$I2)
+# yaye version new
+yaye_version <- as.data.frame(lsoda(initial_values_yaye_version, times, Abbreviated_Model, params))
+print("yaye version new")
+print(yaye_version$I0)
 
 # summer version
 summer_version <- EpiModel$new(times, names(initial_values), as.list(initial_values), params,
@@ -71,7 +75,11 @@ summer_version <- EpiModel$new(times, names(initial_values), as.list(initial_val
                               infectious_compartment="I", initial_conditions_sum_to_total = FALSE, report_progress = FALSE, reporting_sigfigs = 6,
                               birth_approach = "replace_deaths", entry_compartment = "S")
 
-summer_version$stratify("infect", seq(0, 2), c("I"), report = FALSE)
+summer_version$stratify("infect", seq(0, 2), c("I"), 
+                        list(epsilon=list(adjustments=list("0"=params$prop_I0 * params$P_epsilon, 
+                                                           "1"=params$prop_I1 * params$P_epsilon,
+                                                           "2"=params$prop_I2 * params$P_epsilon))), 
+                        report = FALSE)
 # print(summer_version$flows)
 
 summer_version$run_model()
@@ -80,7 +88,7 @@ print("summer version")
 # print(summer_version$outputs$I)
 
 
-print(summer_version$outputs$IXinfect_0 + summer_version$outputs$IXinfect_1 + summer_version$outputs$IXinfect_2)
+print(summer_version$outputs$IXinfect_0)
 
 
 
