@@ -1,11 +1,11 @@
 
-# setwd("//ad.monash.edu/home/User096/jtrauer/Documents/GitHub/heterogeneity")
-setwd("C://Users/jtrauer/Desktop/heterogeneity/heterogeneity")
+setwd("//ad.monash.edu/home/User096/jtrauer/Documents/GitHub/heterogeneity")
+# setwd("C://Users/jtrauer/Desktop/heterogeneity/heterogeneity")
 source("model_functions.R")
 source("function_tool_kit.R")
 local_repo_directory <- getwd()
-setwd("C:/Users/jtrauer/Desktop/summer")
-# setwd("//ad.monash.edu/home/User096/jtrauer/Documents/GitHub/summer")
+# setwd("C:/Users/jtrauer/Desktop/summer")
+setwd("//ad.monash.edu/home/User096/jtrauer/Documents/GitHub/summer")
 source("summer_model.R")
 setwd(local_repo_directory)
 
@@ -26,7 +26,9 @@ params <- list(
             prop_I1 = 0.31,
             prop_I2 = 0.11,
             P_j = 0.058,
-            P_h = 0.058)
+            P_h = 0.058,
+            alpha_1 = 0.22,
+            alpha_0 = 0)
 
 # parameter processing
 params$epsilon <- params$P_epsilon / params$Time_L1
@@ -87,8 +89,8 @@ summer_version$stratify("infect", seq(0, 2), c("I"),
                              nu=list(adjustments=list("0"=params$prop_I0,
                                                       "1"=params$prop_I1,
                                                       "2"=params$prop_I2))),
-                        infectiousness_adjustments = c("0"=0,
-                                                       "1"=0.21,
+                        infectiousness_adjustments = c("0"=params$alpha_0,
+                                                       "1"=params$alpha_1,
                                                        "2"=1),
                         report = FALSE)
 
