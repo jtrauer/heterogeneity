@@ -1,10 +1,11 @@
 
-setwd("//ad.monash.edu/home/User096/jtrauer/Documents/GitHub/heterogeneity")
+# setwd("//ad.monash.edu/home/User096/jtrauer/Documents/GitHub/heterogeneity")
+setwd("C://Users/jtrauer/Desktop/heterogeneity/heterogeneity")
 source("model_functions.R")
 source("function_tool_kit.R")
 local_repo_directory <- getwd()
-# setwd("C:/Users/jtrauer/Desktop/summer")
-setwd("//ad.monash.edu/home/User096/jtrauer/Documents/GitHub/summer")
+setwd("C:/Users/jtrauer/Desktop/summer")
+# setwd("//ad.monash.edu/home/User096/jtrauer/Documents/GitHub/summer")
 source("summer_model.R")
 setwd(local_repo_directory)
 
@@ -20,7 +21,12 @@ params <- list(
             beta = 30,
             cdr_b = 0.8,
             treatment_success = 0.8,
-            r = 0.21)
+            r = 0.21,
+            prop_I0 = 0.58,
+            prop_I1 = 0.31,
+            prop_I2 = 0.11,
+            P_j = 0.058,
+            P_h = 0.058)
 
 # parameter processing
 params$epsilon <- params$P_epsilon / params$Time_L1
@@ -29,6 +35,9 @@ params$epsilon <- params$P_epsilon / params$Time_L1
 
 params$kappa <- (1 - params$P_epsilon) / params$Time_L1
 params$nu <- params$P_nu / params$Time_L2
+
+params$j <- params$P_j / params$Time_I
+params$h <- params$P_h / params$Time_I
 
 # params$nu <- 0
 
@@ -43,7 +52,7 @@ params$delta <- find_delta_from_cdr(params$cdr_b, params$gamma + params$mu, 1)
 S_init = 1
 L1_init = 0
 L2_init = 0
-I_init = .2
+I_init = 1e-6
 initial_values = c(S = S_init - I_init, L1 = 0, L2 = 0, I = I_init)
 initial_values_yaye_version <- c(S = S_init - I_init, L1 = 0, L2 = 0, I0 = I_init / 3, I1 = I_init / 3, I2 = I_init / 3)
 initial_model_run_duration <- 1e2
@@ -54,10 +63,10 @@ times <- seq(0, initial_model_run_duration)
 # print("yaye version")
 # print(yaye_version$I)
 
-# # yaye version new
-# yaye_version <- as.data.frame(lsoda(initial_values_yaye_version, times, Abbreviated_Model, params))
-# print("yaye version new")
-# print(yaye_version$I0 + yaye_version$I2 + yaye_version$I2)
+# yaye version new
+yaye_version <- as.data.frame(lsoda(initial_values_yaye_version, times, Abbreviated_Model, params))
+print("yaye version new")
+print(yaye_version$I0)
 
 # summer version
 summer_version <- EpiModel$new(times, names(initial_values), as.list(initial_values), params,
@@ -71,7 +80,23 @@ summer_version <- EpiModel$new(times, names(initial_values), as.list(initial_val
                               infectious_compartment="I", initial_conditions_sum_to_total = FALSE, report_progress = FALSE, reporting_sigfigs = 6,
                               birth_approach = "replace_deaths", entry_compartment = "S")
 
-summer_version$stratify("infect", seq(0, 2), c("I"), report = FALSE)
+summer_version$stratify("infect", seq(0, 2), c("I"), 
+                        list(epsilon=list(adjustments=list("0"=params$prop_I0,
+                                                           "1"=params$prop_I1,
+                                                           "2"=params$prop_I2)),
+                             nu=list(adjustments=list("0"=params$prop_I0,
+                                                      "1"=params$prop_I1,
+                                                      "2"=params$prop_I2))),
+                        infectiousness_adjustments = c("0"=0,
+                                                       "1"=0.21,
+                                                       "2"=1),
+                        report = FALSE)
+
+
+summer_version$add_single_flow(c("standard_flows", "h", "IXinfect_0", "IXinfect_1"))
+summer_version$add_single_flow(c("standard_flows", "j", "IXinfect_1", "IXinfect_2"))
+
+
 # print(summer_version$flows)
 
 summer_version$run_model()
@@ -80,7 +105,7 @@ print("summer version")
 # print(summer_version$outputs$I)
 
 
-print(summer_version$outputs$IXinfect_0 + summer_version$outputs$IXinfect_1 + summer_version$outputs$IXinfect_2)
+print(summer_version$outputs$IXinfect_0)
 
 
 
