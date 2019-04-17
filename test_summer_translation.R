@@ -24,7 +24,9 @@ params <- list(
             r = 0.21,
             prop_I0 = 0.58,
             prop_I1 = 0.31,
-            prop_I2 = 0.11)
+            prop_I2 = 0.11,
+            P_j = 0.058,
+            P_h = 0.058)
 
 # parameter processing
 params$epsilon <- params$P_epsilon / params$Time_L1
@@ -33,6 +35,9 @@ params$epsilon <- params$P_epsilon / params$Time_L1
 
 params$kappa <- (1 - params$P_epsilon) / params$Time_L1
 params$nu <- params$P_nu / params$Time_L2
+
+params$j <- params$P_j / params$Time_I
+params$h <- params$P_h / params$Time_I
 
 # params$nu <- 0
 
@@ -83,6 +88,12 @@ summer_version$stratify("infect", seq(0, 2), c("I"),
                                                       "1"=params$prop_I1,
                                                       "2"=params$prop_I2))),
                         report = FALSE)
+
+
+summer_version$add_single_flow(c("standard_flows", "h", "IXinfect_0", "IXinfect_1"))
+summer_version$add_single_flow(c("standard_flows", "j", "IXinfect_1", "IXinfect_2"))
+
+
 # print(summer_version$flows)
 
 summer_version$run_model()
