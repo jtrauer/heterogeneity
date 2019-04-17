@@ -76,9 +76,9 @@ summer_version <- EpiModel$new(times, names(initial_values), as.list(initial_val
                               birth_approach = "replace_deaths", entry_compartment = "S")
 
 summer_version$stratify("infect", seq(0, 2), c("I"), 
-                        list(epsilon=list(adjustments=list("0"=params$prop_I0 * params$P_epsilon, 
-                                                           "1"=params$prop_I1 * params$P_epsilon,
-                                                           "2"=params$prop_I2 * params$P_epsilon))), 
+                        list(epsilon=list(adjustments=list("0"=params$prop_I0 * params$epsilon,
+                                                           "1"=params$prop_I1 * params$epsilon,
+                                                           "2"=params$prop_I2 * params$epsilon))), 
                         report = FALSE)
 # print(summer_version$flows)
 
