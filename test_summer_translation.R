@@ -28,7 +28,11 @@ params <- list(
             P_j = 0.058,
             P_h = 0.058,
             alpha_1 = 0.22,
-            alpha_0 = 0)
+            alpha_0 = 0,
+            P_mui0 = 0.096,
+            P_mui1 = 0.096,
+            P_mui2 = 0.787
+            )
 
 # parameter processing
 params$epsilon <- params$P_epsilon / params$Time_L1
@@ -44,7 +48,12 @@ params$h <- params$P_h / params$Time_I
 # params$nu <- 0
 
 params$universal_death_rate <- params$mu
-params$mui <- params$P_mui / params$Time_I
+
+params$mui0 <- params$P_mui0 / params$Time_I
+params$mui1 <- params$P_mui1 / params$Time_I
+params$mui2 <- params$P_mui2 / params$Time_I
+
+
 params$gamma <- (1 - params$P_mui) / params$Time_I
 params$beta_reinfection <- params$beta * params$r
 
@@ -79,22 +88,25 @@ summer_version <- EpiModel$new(times, names(initial_values), as.list(initial_val
                                    c("standard_flows", "nu", "L2", "I"),
                                    c("standard_flows", "gamma", "I", "L2"),
                                    c("standard_flows", "delta", "I", "S"),
-                                   c("compartment_death", "mui", "I")),
+                                   c("compartment_death", "mui0", "I")),
                               infectious_compartment="I", initial_conditions_sum_to_total = FALSE, report_progress = FALSE, reporting_sigfigs = 6,
                               birth_approach = "replace_deaths", entry_compartment = "S")
 
-summer_version$stratify("infect", seq(0, 2), c("I"), 
+summer_version$stratify("infect", seq(0, 2), c("I"),
                         list(epsilon=list(adjustments=list("0"=params$prop_I0,
                                                            "1"=params$prop_I1,
                                                            "2"=params$prop_I2)),
                              nu=list(adjustments=list("0"=params$prop_I0,
                                                       "1"=params$prop_I1,
-                                                      "2"=params$prop_I2))),
+                                                      "2"=params$prop_I2)),
+                             mui=list(adjustments=list("0"=params$mui0,
+                                                       "1"=params$mui1,
+                                                       "2"=params$mui2),
+                                      overwrite=seq(0, 2))),
                         infectiousness_adjustments = c("0"=params$alpha_0,
                                                        "1"=params$alpha_1,
                                                        "2"=1),
                         report = FALSE)
-
 
 summer_version$add_transition_flow(c("standard_flows", "h", "IXinfect_0", "IXinfect_1"))
 summer_version$add_transition_flow(c("standard_flows", "j", "IXinfect_1", "IXinfect_2"))
@@ -109,7 +121,6 @@ print("summer version")
 
 
 print(summer_version$outputs$IXinfect_0)
-
 
 
 
