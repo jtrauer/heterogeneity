@@ -19,6 +19,7 @@ Abbreviated_Model <- function(current_timepoint, state_values, parameters)
         
         #compute derivative
         dS = mu * N + 
+          mui * (I0 + I1 + I2) +
           delta * (I0 + I1 + I2) -
           beta * S * (I0 * alpha_0 + I1 * alpha_1 + I2) / N - 
           mu * S
