@@ -1,11 +1,11 @@
 
-setwd("//ad.monash.edu/home/User096/jtrauer/Documents/GitHub/heterogeneity")
-# setwd("C://Users/jtrauer/Desktop/heterogeneity/heterogeneity")
+# setwd("//ad.monash.edu/home/User096/jtrauer/Documents/GitHub/heterogeneity")
+setwd("C://Users/jtrauer/Desktop/heterogeneity/heterogeneity")
 source("model_functions.R")
 source("function_tool_kit.R")
 local_repo_directory <- getwd()
-# setwd("C:/Users/jtrauer/Desktop/summer")
-setwd("//ad.monash.edu/home/User096/jtrauer/Documents/GitHub/summer")
+setwd("C:/Users/jtrauer/Desktop/summer")
+# setwd("//ad.monash.edu/home/User096/jtrauer/Documents/GitHub/summer")
 source("summer_model.R")
 setwd(local_repo_directory)
 
@@ -78,7 +78,8 @@ summer_version <- EpiModel$new(times, names(initial_values), as.list(initial_val
                                    c("standard_flows", "epsilon", "L1", "I"),
                                    c("standard_flows", "nu", "L2", "I"),
                                    c("standard_flows", "gamma", "I", "L2"),
-                                   c("standard_flows", "delta", "I", "S")),
+                                   c("standard_flows", "delta", "I", "S"),
+                                   c("compartment_death", "mui", "I")),
                               infectious_compartment="I", initial_conditions_sum_to_total = FALSE, report_progress = FALSE, reporting_sigfigs = 6,
                               birth_approach = "replace_deaths", entry_compartment = "S")
 
@@ -95,8 +96,8 @@ summer_version$stratify("infect", seq(0, 2), c("I"),
                         report = FALSE)
 
 
-summer_version$add_single_flow(c("standard_flows", "h", "IXinfect_0", "IXinfect_1"))
-summer_version$add_single_flow(c("standard_flows", "j", "IXinfect_1", "IXinfect_2"))
+summer_version$add_transition_flow(c("standard_flows", "h", "IXinfect_0", "IXinfect_1"))
+summer_version$add_transition_flow(c("standard_flows", "j", "IXinfect_1", "IXinfect_2"))
 
 
 # print(summer_version$flows)
