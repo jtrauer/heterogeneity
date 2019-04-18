@@ -28,22 +28,22 @@ Abbreviated_Model <- function(current_timepoint, state_values, parameters)
           (epsilon + kappa + mu) * L1
         
         dL2 = kappa * L1 + 
-          gamma * (I0 + I1 + I2) - 
+          gamma0 * I0 + gamma1 * I1 + gamma2 * I2 - 
           (beta * r * (I0 * alpha_0 + I1 * alpha_1 + I2) + nu + mu) * L2
         
         dI0 = epsilon * L1 * prop_I0 + 
           nu * L2 * prop_I0 - 
-          (gamma + delta + h + mui0 + mu) * I0
+          (gamma0 + delta + h + mui0 + mu) * I0
         
         dI1 = epsilon * L1 * prop_I1 + 
           nu * L2 * prop_I1 +
           h * I0 - 
-          (gamma + delta + j + mui1 + mu) * I1
+          (gamma1 + delta + j + mui1 + mu) * I1
         
         dI2 = epsilon * L1 * prop_I2 + 
           nu * L2 * prop_I2 + 
           j * I1 - 
-          (gamma + delta + mui2 + mu) * I2
+          (gamma2 + delta + mui2 + mu) * I2
 
         #combine results
         results = c(dS, dL1, dL2, dI0, dI1, dI2)

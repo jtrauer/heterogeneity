@@ -55,6 +55,12 @@ params$mui2 <- params$P_mui2 / params$Time_I
 
 
 params$gamma <- (1 - params$P_mui) / params$Time_I
+
+params$gamma0 <- 1 / params$Time_I - (params$mu + params$h + params$mui0)
+params$gamma1 <- 1 / params$Time_I - (params$mu + params$j + params$mui1)
+params$gamma2 <- 1 / params$Time_I - (params$mui2 + params$mu)
+
+
 params$beta_reinfection <- params$beta * params$r
 
 params$delta <- find_delta_from_cdr(params$cdr_b, params$gamma + params$mu, 1)
@@ -99,6 +105,10 @@ summer_version$stratify("infect", seq(0, 2), c("I"),
                              nu=list(adjustments=list("0"=params$prop_I0,
                                                       "1"=params$prop_I1,
                                                       "2"=params$prop_I2)),
+                             gamma=list(adjustments=list("0"=params$gamma0,
+                                                         "1"=params$gamma1,
+                                                         "2"=params$gamma2),
+                                        overwrite=seq(0, 2)),
                              mui=list(adjustments=list("0"=params$mui0,
                                                        "1"=params$mui1,
                                                        "2"=params$mui2),
