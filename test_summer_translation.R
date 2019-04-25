@@ -106,8 +106,8 @@ for (run in seq(n_runs)) {
 
   # print comparison of outputs
   writeLines(paste("direct ode-based version, prevalence of I0:", tail(yaye_version$I0, 1) * 1e5))
-  plot(summer_version$outputs$time, summer_version$outputs$IXinfect_2)
-  lines(yaye_version$time, yaye_version$I2, "l", col = "yellow")
+  plot(summer_version$outputs$time, summer_version$outputs$IXinfect_2 * 1e5)
+  lines(yaye_version$time, yaye_version$I2 * 1e5, "l", col = "red", lwd = 2)
   
   print(tail(yaye_version$time, 1))
   writeLines(paste("summer interpretation, prevalence of I0:   ", tail(summer_version$outputs$IXinfect_0, 1) * 1e5))
