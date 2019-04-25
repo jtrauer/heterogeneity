@@ -73,11 +73,17 @@ S_init = 1
 I_init = 1e-6
 initial_values = c(S = S_init - I_init, L1 = 0, L2 = 0, I = I_init)  # summer will split the I compartment
 initial_values_yaye_version <- c(S = S_init - I_init, L1 = 0, L2 = 0, I0 = I_init / 3, I1 = I_init / 3, I2 = I_init / 3)
-times <- seq(0, 1e2)
+times <- seq(0, 2e2)
 
 # do the LHS sampling for all parameters and all runs
 lhs_samples <- as.data.frame(maximinLHS(n_runs, length(uncertainty_params)))
 colnames(lhs_samples) <- names(uncertainty_params)
+
+# set stopping condition, based on largest absolute rate of change in compartment sizes being less than a specified value
+tolerance <- 1e-6
+stopping_condition <- function(t, state, parms) {
+  max(abs(unlist(YayeModel(t, state, parms)))) - tolerance
+}
 
 # loop over the requested number of runs
 for (run in seq(n_runs)) {
@@ -88,18 +94,22 @@ for (run in seq(n_runs)) {
     params[[param]] <- adjust_lhs_to_range(lhs_samples[[param]][run], param, uncertainty_params)
   }
   params <- process_parameters(params)
-  
+
   # create summer model and define yaye model
   source("summer_version_creation.R")
-  
+
   # yaye version new
-  yaye_version <- as.data.frame(lsoda(initial_values_yaye_version, times, YayeModel, params))
-  
+  yaye_version <- as.data.frame(lsodar(initial_values_yaye_version, times, YayeModel, params, rootfunc = stopping_condition))
+
   # run summer version
   summer_version$run_model()
-  
+
   # print comparison of outputs
   writeLines(paste("direct ode-based version, prevalence of I0:", tail(yaye_version$I0, 1) * 1e5))
+  plot(summer_version$outputs$time, summer_version$outputs$IXinfect_2)
+  lines(yaye_version$time, yaye_version$I2, "l", col = "yellow")
+  
+  print(tail(yaye_version$time, 1))
   writeLines(paste("summer interpretation, prevalence of I0:   ", tail(summer_version$outputs$IXinfect_0, 1) * 1e5))
 }
 
