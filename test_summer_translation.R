@@ -100,13 +100,14 @@ for (run in seq(n_runs)) {
 
   # yaye version new
   yaye_version <- as.data.frame(lsodar(initial_values_yaye_version, times, YayeModel, params, rootfunc = stopping_condition))
-
+  
   # run summer version
   summer_version$run_model()
 
   # print comparison of outputs
   writeLines(paste("direct ode-based version, prevalence of I0:", tail(yaye_version$I0, 1) * 1e5))
-  plot(summer_version$outputs$time, summer_version$outputs$IXinfect_2 * 1e5)
+  plot(summer_version$outputs$time, summer_version$outputs$IXinfect_2 * 1e5, 
+       xlab = "Time in years", ylab = "Superspreader prevalence per 100,000")
   lines(yaye_version$time, yaye_version$I2 * 1e5, "l", col = "red", lwd = 2)
   
   print(tail(yaye_version$time, 1))
