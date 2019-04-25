@@ -10,41 +10,47 @@ library(lhs)
 local_repo_directory <- getwd()
 setwd(local_repo_directory)
 
-# initially setting parameter values to what were the upper limits in sensitivity.R
-params <- list(
-            mu = 1 / 75,
-            Time_L1 = 1,
-            Time_L2 = 20,
-            Time_I = 3,
-            P_mui = 0.787,
-            beta = 30,
-            cdr_b = 0.8,
-            treatment_success = 0.8,
-            r = 0.21,
-            prop_I0 = 0.58,
-            prop_I1 = 0.31,
-            prop_I2 = 0.11,
-            P_j = 0.058,
-            P_h = 0.058,
-            alpha_1 = 0.22,
-            alpha_0 = 0,
-            P_mui0 = 0.096,
-            P_mui1 = 0.096,
-            P_mui2 = 0.787)
+# first set the fixed parameter values
+params <- list(Time_L1 = 1,
+               Time_L2 = 20,
+               Time_I = 3,
+               P_mui = 0.787,
+               treatment_success = 0.8,
+               r = 0.21,
+               prop_I0 = 0.58,
+               prop_I1 = 0.31,
+               prop_I2 = 0.11,
+               alpha_1 = 0.22,
+               alpha_0 = 0)
 
+# now set the ones to vary through the LHS process
 uncertainty_params <- list(P_epsilon = c(min = 0.074, max = 0.128),
                            P_nu = c(min = 0.018, max = 0.077),
-                           Time_L1 = list(min = 0.167, max = 1.0))
+                           Time_L1 = list(min = 0.167, max = 1.0),
+                           mu = c(min = 1 / 75, max = 1 / 55),
+                           P_mui0 = list(min = 0.05, max = 0.096),
+                           P_mui1 = list(min = 0.05, max = 0.096),
+                           P_mui2 = list(min = 0.327, max = 0.787),
+                           beta = list(min = 40, max = 60),
+                           cdr_b = list(min = 0.5, max = 0.8),
+                           P_j = list(min = 0, max = 0.058),
+                           P_h = list(min = 0, max = 0.058))
 
+# user to request number of runs
 n_runs <- 5
 
+# do the LHS sampling for all parameters and all runs
+lhs_samples <- as.data.frame(maximinLHS(n_runs, length(uncertainty_params)))
+colnames(lhs_samples) <- names(uncertainty_params)
+
+# loop over the requested number of runs
 for (run in seq(n_runs)) {
 
+  # report
   print("run number")
   print(run)
-  lhs_samples <- as.data.frame(maximinLHS(n_runs, length(uncertainty_params)))
-  colnames(lhs_samples) <- names(uncertainty_params)
-  
+
+  # use the LHS sample values to determine parameter values
   for (param in names(uncertainty_params)) {
     params[[param]] <- adjust_lhs_to_range(lhs_samples[[param]][run], param, uncertainty_params)
   }
@@ -66,7 +72,7 @@ for (run in seq(n_runs)) {
   params$beta_reinfection <- params$beta * params$r
   params$delta <- find_delta_from_cdr(params$cdr_b, params$gamma + params$mu, 1)
   
-  # model intial conditions and integration time specification
+  # set model intial conditions and specify integration time
   S_init = 1
   I_init = 1e-6
   initial_values = c(S = S_init - I_init, L1 = 0, L2 = 0, I = I_init)
