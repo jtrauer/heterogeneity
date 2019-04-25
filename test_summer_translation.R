@@ -17,7 +17,6 @@ params <- list(Time_L1 = 1,
                P_mui = 0.787,
                treatment_success = 0.8,
                r = 0.21,
-               prop_I0 = 0.58,
                prop_I1 = 0.31,
                prop_I2 = 0.11,
                alpha_1 = 0.22,
@@ -71,6 +70,7 @@ for (run in seq(n_runs)) {
   params$gamma2 <- 1 / params$Time_I - (params$mui2 + params$mu)
   params$beta_reinfection <- params$beta * params$r
   params$delta <- find_delta_from_cdr(params$cdr_b, params$gamma + params$mu, 1)
+  params$prop_I0 <- 1 - params$prop_I1 - params$prop_I2
   
   # set model intial conditions and specify integration time
   S_init = 1
