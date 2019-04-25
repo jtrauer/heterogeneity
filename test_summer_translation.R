@@ -10,6 +10,37 @@ library(lhs)
 local_repo_directory <- getwd()
 setwd(local_repo_directory)
 
+# process the parameters from the epidemiological parameters being varied into model flow rates
+process_parameters <- function(parameters) {
+  
+  # latency progression parameters
+  parameters$epsilon <- parameters$P_epsilon / parameters$Time_L1
+  parameters$kappa <- (1 - parameters$P_epsilon) / parameters$Time_L1
+  parameters$nu <- parameters$P_nu / parameters$Time_L2
+
+  # between-disease compartment progression parameters
+  parameters$j <- parameters$P_j / parameters$Time_I
+  parameters$h <- parameters$P_h / parameters$Time_I
+  
+  # death and spontaneous recovery-related parameters
+  parameters$universal_death_rate <- parameters$mu
+  parameters$mui0 <- parameters$P_mui0 / parameters$Time_I
+  parameters$mui1 <- parameters$P_mui1 / parameters$Time_I
+  parameters$mui2 <- parameters$P_mui2 / parameters$Time_I
+  parameters$gamma <- (1 - parameters$P_mui) / parameters$Time_I
+  parameters$gamma0 <- 1 / parameters$Time_I - (parameters$mu + parameters$h + parameters$mui0)
+  parameters$gamma1 <- 1 / parameters$Time_I - (parameters$mu + parameters$j + parameters$mui1)
+  parameters$gamma2 <- 1 / parameters$Time_I - (parameters$mui2 + parameters$mu)
+
+  # infection-related parameters
+  parameters$beta_reinfection <- parameters$beta * parameters$r
+  parameters$prop_I0 <- 1 - parameters$prop_I1 - parameters$prop_I2
+  
+  # case detection parameter
+  parameters$delta <- find_delta_from_cdr(parameters$cdr_b, parameters$gamma + parameters$mu, 1)
+  parameters
+}
+
 # first set the fixed parameter values
 params <- list(Time_L1 = 1,
                Time_L2 = 20,
@@ -53,24 +84,9 @@ for (run in seq(n_runs)) {
   for (param in names(uncertainty_params)) {
     params[[param]] <- adjust_lhs_to_range(lhs_samples[[param]][run], param, uncertainty_params)
   }
-
-  # process parameters
-  params$epsilon <- params$P_epsilon / params$Time_L1
-  params$kappa <- (1 - params$P_epsilon) / params$Time_L1
-  params$nu <- params$P_nu / params$Time_L2
-  params$j <- params$P_j / params$Time_I
-  params$h <- params$P_h / params$Time_I
-  params$universal_death_rate <- params$mu
-  params$mui0 <- params$P_mui0 / params$Time_I
-  params$mui1 <- params$P_mui1 / params$Time_I
-  params$mui2 <- params$P_mui2 / params$Time_I
-  params$gamma <- (1 - params$P_mui) / params$Time_I
-  params$gamma0 <- 1 / params$Time_I - (params$mu + params$h + params$mui0)
-  params$gamma1 <- 1 / params$Time_I - (params$mu + params$j + params$mui1)
-  params$gamma2 <- 1 / params$Time_I - (params$mui2 + params$mu)
-  params$beta_reinfection <- params$beta * params$r
-  params$delta <- find_delta_from_cdr(params$cdr_b, params$gamma + params$mu, 1)
-  params$prop_I0 <- 1 - params$prop_I1 - params$prop_I2
+  
+  # adapt parameters from epidemiological values to model flows
+  params <- process_parameters(params)
   
   # set model intial conditions and specify integration time
   S_init = 1
@@ -89,9 +105,9 @@ for (run in seq(n_runs)) {
   summer_version$run_model()
   
   # print comparison of outputs
-  print("yaye version new")
+  print("direct ode-based version, prevalence of I0")
   print(tail(yaye_version$I0, 1) * 1e5)
-  print("summer version")
+  print("summer version, prevalence of I0")
   print(tail(summer_version$outputs$IXinfect_0, 1) * 1e5)
 }
 
