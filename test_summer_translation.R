@@ -81,10 +81,7 @@ colnames(lhs_samples) <- names(uncertainty_params)
 
 # loop over the requested number of runs
 for (run in seq(n_runs)) {
-
-  # report
-  print("run number")
-  print(run)
+  writeLines(paste("\n____________\nrun number", run))
 
   # use the LHS sample values to determine parameter values and adapt parameters from epidemiological values to model flows
   for (param in names(uncertainty_params)) {

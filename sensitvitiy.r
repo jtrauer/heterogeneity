@@ -1,8 +1,8 @@
 
 library(deSolve)
 library(reshape2)
-library(ggplot2)
-library(ggpubr)
+# library(ggplot2)
+# library(ggpubr)
 library(lhs)
 library(sensitivity)
 
@@ -34,7 +34,9 @@ param_value_limits <- list(N = list(min = 1, max = 1),
                            P_h = list(min = 0.0, max = 0.058),
                            P_j = list(min = 0.0, max = 0.058),
                            p1 = list(min = 0, max = 0),
-                           p2 = list(min = 0, max = 0))
+                           p2 = list(min = 0, max = 0),
+                           alpha_1 = list(min = 0.22, max = 0.22),
+                           alpha_0 = list(min = 0, max= 0))
 
 # Latin hypercube sampling
 n_runs <- 2 # choose number of points to simulate
@@ -70,9 +72,11 @@ output_matrix_equi$beta1 = output_matrix_equi$beta2 * output_matrix_equi$alpha
 output_matrix_equi$epsilon0 <- find_rate_from_proportion_params("P_epsilon", "Time_L1", output_matrix_equi, "prop_I0")
 output_matrix_equi$epsilon1 <- find_rate_from_proportion_params("P_epsilon", "Time_L1", output_matrix_equi, "prop_I1")
 output_matrix_equi$epsilon2 <- find_rate_from_proportion_params("P_epsilon", "Time_L1", output_matrix_equi, "prop_I2")
+output_matrix_equi$epsilon <- find_rate_from_proportion_params("P_epsilon", "Time_L1", output_matrix_equi)
 output_matrix_equi$nu0 <- find_rate_from_proportion_params("P_nu", "Time_L2", output_matrix_equi, "prop_I0")
 output_matrix_equi$nu1 <- find_rate_from_proportion_params("P_nu", "Time_L2", output_matrix_equi, "prop_I1")
 output_matrix_equi$nu2 <- find_rate_from_proportion_params("P_nu", "Time_L2", output_matrix_equi, "prop_I2")
+output_matrix_equi$nu <- find_rate_from_proportion_params("P_nu", "Time_L2", output_matrix_equi)
 output_matrix_equi$mui0 <- find_rate_from_proportion_params("P_mui0", "Time_I", output_matrix_equi)
 output_matrix_equi$mui1 <- find_rate_from_proportion_params("P_mui1", "Time_I", output_matrix_equi)
 output_matrix_equi$mui2 <- find_rate_from_proportion_params("P_mui2", "Time_I", output_matrix_equi)
@@ -102,6 +106,10 @@ output_matrix_equi$delta2_b <-
                         output_matrix_equi$mu,
                       output_matrix_equi$treatment_success)
 
+#
+output_matrix_equi$delta <- output_matrix_equi$delta0_b
+output_matrix_equi$beta <- output_matrix_equi$beta2
+
 # Initial conditions for each compartment: 
 S_init = 1
 L1_init = 0
@@ -118,33 +126,35 @@ equilibrium_prevalence_threshold <- 1e-6
 # Loop up to equilibrium
 for (run in seq(n_runs)) {
   
-  
   # Run baseline
   initial_values = c(S = S_init - I0_init - I1_init - I2_init,
-                     L1 = L1_init, L2 = L2_init, I0 = I0_init, I1 = I1_init, I2 = I2_init,
-                     inc = 0)
+                     L1 = L1_init, L2 = L2_init, I0 = I0_init, I1 = I1_init, I2 = I2_init)
   params <- as.list(c(output_matrix_equi[run, ]))
   times <- seq(0, initial_model_run_duration)
-  baseline_output <- as.data.frame(lsoda(initial_values, times, Baseline_model, params))
+  
+  baseline_output <- as.data.frame(lsoda(initial_values, times, YayeModel, params))
+  
   population_size <- rowSums(baseline_output[, 2:7])
-  incidence_baseline_output <- diff(baseline_output$inc) / population_size[-1] * 1e5
-  incidence_change <- abs(incidence_baseline_output[length(incidence_baseline_output) - 1] - 
-                   incidence_baseline_output[length(incidence_baseline_output) - 2])
+
+  baseline_output$prevalence <- baseline_output$I0 + baseline_output$I1 + baseline_output$I2
+  prevalence_baseline_output <- diff(baseline_output$prevalence) / population_size[-1] * 1e5
+  prevalence_change <- abs(prevalence_baseline_output[length(prevalence_baseline_output) - 1] - 
+                             prevalence_baseline_output[length(prevalence_baseline_output) - 2])
   
   # Loop over serial periods of time while checking to see if equilibrium has been reached
-  while(incidence_change > equilibrium_prevalence_threshold){
+  while(prevalence_change > equilibrium_prevalence_threshold){
     initial_values <- c(S = min(baseline_output$S),
                         L1 = max(baseline_output$L1), L2 = max(baseline_output$L2), I0 = max(baseline_output$I0), I1 = max(baseline_output$I1), I2 = max(baseline_output$I2),
                         inc = 0)
     times=seq(0, additional_model_run_durations)
-    baseline_output <- as.data.frame(lsoda(initial_values, times, Baseline_model, params))
+    baseline_output <- as.data.frame(lsoda(initial_values, times, YayeModel, params))
     population_size <- rowSums(baseline_output[, 2:7])
     incidence_baseline_output <- diff(baseline_output$inc) / population_size[-1] * 1e5
     incidence_change <- abs(incidence_baseline_output[length(incidence_baseline_output) - 1] - 
                      incidence_baseline_output[length(incidence_baseline_output) - 2])
   }
-  end_baseline_incidence <- tail(incidence_baseline_output, n=1)
-  output_matrix_equi$Equi_incidence[run] <- end_baseline_incidence
+  end_baseline_prevalence <- tail(prevalence_baseline_output, n=1)
+  output_matrix_equi$Equi_prevalence[run] <- end_baseline_prevalence
 }
 
 #now we have incidence and each parameters in one matrix
