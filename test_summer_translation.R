@@ -1,12 +1,13 @@
 
-setwd("//ad.monash.edu/home/User096/jtrauer/Documents/GitHub/heterogeneity")
-# setwd("C://Users/jtrauer/Desktop/heterogeneity/heterogeneity")
-source("model_functions.R")
-source("function_tool_kit.R")
-local_repo_directory <- getwd()
 # setwd("C:/Users/jtrauer/Desktop/summer")
 setwd("//ad.monash.edu/home/User096/jtrauer/Documents/GitHub/summer")
 source("summer_model.R")
+
+setwd("//ad.monash.edu/home/User096/jtrauer/Documents/GitHub/heterogeneity")
+# setwd("C://Users/jtrauer/Desktop/heterogeneity/heterogeneity")
+source("function_tool_kit.R")
+# library(lhs)
+local_repo_directory <- getwd()
 setwd(local_repo_directory)
 
 # initially setting parameter values to what were the upper limits in sensitivity.R
@@ -14,7 +15,7 @@ params <- list(
             P_epsilon = 0.128,
             P_nu = 0.077, 
             mu = 1 / 75,
-            Time_L1 = 1.0,
+            Time_L1 = 1,
             Time_L2 = 20,
             Time_I = 3,
             P_mui = 0.787,
@@ -31,8 +32,15 @@ params <- list(
             alpha_0 = 0,
             P_mui0 = 0.096,
             P_mui1 = 0.096,
-            P_mui2 = 0.787
-            )
+            P_mui2 = 0.787)
+
+# uncertainty_param_ranges <- c(P_epsilon = list(min = 0.074, max = 0.128),
+#                               P_nu = list(min = 0.018, max = 0.077))
+# 
+# 
+# n_runs <- 2
+# lhs <- maximinLHS(n_runs, length(uncertainty_param_ranges))
+
 
 # parameter processing
 params$epsilon <- params$P_epsilon / params$Time_L1
@@ -58,46 +66,11 @@ initial_values = c(S = S_init - I_init, L1 = 0, L2 = 0, I = I_init)
 initial_values_yaye_version <- c(S = S_init - I_init, L1 = 0, L2 = 0, I0 = I_init / 3, I1 = I_init / 3, I2 = I_init / 3)
 times <- seq(0, 1e2)
 
+# create summer model and define yaye model
+source("model_functions.R")
+
 # yaye version new
-yaye_version <- as.data.frame(lsoda(initial_values_yaye_version, times, Abbreviated_Model, params))
-
-# summer version
-summer_version <- EpiModel$new(times, names(initial_values), as.list(initial_values), params,
-                              list(c("infection_frequency", "beta", "S", "L1"),
-                                   c("infection_frequency", "beta_reinfection", "L2", "L1"),
-                                   c("standard_flows", "kappa", "L1", "L2"),
-                                   c("standard_flows", "epsilon", "L1", "I"),
-                                   c("standard_flows", "nu", "L2", "I"),
-                                   c("standard_flows", "gamma", "I", "L2"),
-                                   c("standard_flows", "delta", "I", "S"),
-                                   c("compartment_death", "mui0", "I")),
-                              infectious_compartment="I", initial_conditions_sum_to_total = FALSE, report_progress = FALSE, reporting_sigfigs = 6,
-                              birth_approach = "replace_deaths", entry_compartment = "S")
-
-# stratify by infectiousness and modify relevant parameters
-summer_version$stratify("infect", seq(0, 2), c("I"),
-                        list(epsilon=list(adjustments=list("0"=params$prop_I0,
-                                                           "1"=params$prop_I1,
-                                                           "2"=params$prop_I2)),
-                             nu=list(adjustments=list("0"=params$prop_I0,
-                                                      "1"=params$prop_I1,
-                                                      "2"=params$prop_I2)),
-                             gamma=list(adjustments=list("0"=params$gamma0,
-                                                         "1"=params$gamma1,
-                                                         "2"=params$gamma2),
-                                        overwrite=seq(0, 2)),
-                             mui=list(adjustments=list("0"=params$mui0,
-                                                       "1"=params$mui1,
-                                                       "2"=params$mui2),
-                                      overwrite=seq(0, 2))),
-                        infectiousness_adjustments = c("0"=params$alpha_0,
-                                                       "1"=params$alpha_1,
-                                                       "2"=1),
-                        report = FALSE)
-
-# add the between-infectious compartment flows
-summer_version$add_transition_flow(c("standard_flows", "h", "IXinfect_0", "IXinfect_1"))
-summer_version$add_transition_flow(c("standard_flows", "j", "IXinfect_1", "IXinfect_2"))
+yaye_version <- as.data.frame(lsoda(initial_values_yaye_version, times, YayeModel, params))
 
 # run summer version
 summer_version$run_model()
