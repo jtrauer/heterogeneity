@@ -4,8 +4,8 @@
 # simple function to convert the LHS sampling over the (0, 1) interval to a sample
 # from the range that is specific to the particular parameter
 adjust_lhs_to_range <- function(input_value, parameter_name, parameter_ranges) {
-    max <- parameter_ranges[[parameter_name]]$max
-    min <- parameter_ranges[[parameter_name]]$min
+    max <- parameter_ranges[[parameter_name]][["max"]]
+    min <- parameter_ranges[[parameter_name]][["min"]]
     output_value <- input_value * (max - min) + min
 }
 

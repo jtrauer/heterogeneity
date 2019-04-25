@@ -42,11 +42,11 @@ for (run in seq(n_runs)) {
 
   print("run number")
   print(run)
-  samples <- as.data.frame(maximinLHS(n_runs, length(uncertainty_params)))
-  colnames(samples) <- names(uncertainty_params)
+  lhs_samples <- as.data.frame(maximinLHS(n_runs, length(uncertainty_params)))
+  colnames(lhs_samples) <- names(uncertainty_params)
   
   for (param in names(uncertainty_params)) {
-    params[[param]] <- samples[[param]][run]
+    params[[param]] <- adjust_lhs_to_range(lhs_samples[[param]][run], param, uncertainty_params)
   }
 
   # process parameters
@@ -84,8 +84,8 @@ for (run in seq(n_runs)) {
   
   # print comparison of outputs
   print("yaye version new")
-  print(tail(yaye_version$I0, 1))
+  print(tail(yaye_version$I0, 1) * 1e5)
   print("summer version")
-  print(tail(summer_version$outputs$IXinfect_0, 1))
+  print(tail(summer_version$outputs$IXinfect_0, 1) * 1e5)
 }
 
