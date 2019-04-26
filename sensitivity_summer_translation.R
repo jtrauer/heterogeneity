@@ -116,6 +116,7 @@ for (run in seq(n_runs)) {
   # print and report comparison of outputs
   plot(yaye_version$time, yaye_version$incidence, 
        xlab = "Time in years", ylab = "Overall incidence per 100,000 per year")
+  lines(summer_version$incidence$times, summer_version$incidence$incidence * 1e5, "l", col = "blue")
   lines(summer_version$outputs$time, summer_version$outputs$IXinfect_2 * 1e5, "p")
   lines(yaye_version$time, yaye_version$I2 * 1e5, "l", col = "red", lwd = 2)
   writeLines(paste("direct ode-based version, prevalence of I0:", tail(yaye_version$I0, 1) * 1e5, 

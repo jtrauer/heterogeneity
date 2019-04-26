@@ -10,7 +10,8 @@ summer_version <- EpiModel$new(times, names(initial_values), as.list(initial_val
                                     c("standard_flows", "delta", "I", "S"),
                                     c("compartment_death", "mui0", "I")),
                                infectious_compartment="I", initial_conditions_sum_to_total = FALSE, report_progress = FALSE, reporting_sigfigs = 6,
-                               birth_approach = "replace_deaths", entry_compartment = "S", equilibrium_stopping_tolerance = tolerance)
+                               birth_approach = "replace_deaths", entry_compartment = "S", equilibrium_stopping_tolerance = tolerance,
+                               track_incidence = TRUE)
 
 # stratify by infectiousness and modify relevant parameters
 summer_version$stratify("infect", seq(0, 2), c("I"),
