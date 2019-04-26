@@ -80,7 +80,7 @@ lhs_samples <- as.data.frame(maximinLHS(n_runs, length(uncertainty_params)))
 colnames(lhs_samples) <- names(uncertainty_params)
 
 # set stopping condition, based on largest absolute rate of change in compartment sizes being less than a specified value
-tolerance <- 1e-6
+tolerance <- 1e-5
 stopping_condition <- function(t, state, parms) {
   max(abs(unlist(YayeModel(t, state, parms)))) - tolerance
 }
@@ -104,13 +104,14 @@ for (run in seq(n_runs)) {
   # run summer version
   summer_version$run_model()
 
-  # print comparison of outputs
-  writeLines(paste("direct ode-based version, prevalence of I0:", tail(yaye_version$I0, 1) * 1e5))
+  # print and report comparison of outputs
   plot(summer_version$outputs$time, summer_version$outputs$IXinfect_2 * 1e5, 
        xlab = "Time in years", ylab = "Superspreader prevalence per 100,000")
   lines(yaye_version$time, yaye_version$I2 * 1e5, "l", col = "red", lwd = 2)
-  
-  print(tail(yaye_version$time, 1))
-  writeLines(paste("summer interpretation, prevalence of I0:   ", tail(summer_version$outputs$IXinfect_0, 1) * 1e5))
+  writeLines(paste("direct ode-based version, prevalence of I0:", tail(yaye_version$I0, 1) * 1e5, 
+                   "per 100,000"))
+  writeLines(paste("summer interpretation, prevalence of I0:   ", tail(summer_version$outputs$IXinfect_0, 1) * 1e5, 
+                   "per 100,000"))
+  writeLines(paste("time to equilibrium:", tail(yaye_version$time, 1), "years"))
 }
 
