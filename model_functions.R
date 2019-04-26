@@ -10,8 +10,9 @@ YayeModel <- function(current_timepoint, state_values, parameters)
   I0=state_values[4] # infectious non-spreaders
   I1=state_values[5] # infectious non-spreaders
   I2=state_values[6] # infectious non-spreaders
-    
-  N <- sum(state_values)
+  cumulative_incidence=state_values[7]
+
+  N <- sum(state_values[1: 6])
 
     with(
       as.list(parameters), #variable names within parameters can be used
@@ -44,9 +45,11 @@ YayeModel <- function(current_timepoint, state_values, parameters)
           nu * L2 * prop_I2 + 
           j * I1 - 
           (gamma2 + delta + mui2 + mu) * I2
+        
+        cumulative_incidence = epsilon * L1 + nu * L2
 
         #combine results
-        results = c(dS, dL1, dL2, dI0, dI1, dI2)
+        results = c(dS, dL1, dL2, dI0, dI1, dI2, cumulative_incidence)
         list(results)
       }
     )

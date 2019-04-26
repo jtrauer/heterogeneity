@@ -72,7 +72,8 @@ n_runs <- 5
 S_init = 1
 I_init = 1e-6
 initial_values = c(S = S_init - I_init, L1 = 0, L2 = 0, I = I_init)  # summer will split the I compartment
-initial_values_yaye_version <- c(S = S_init - I_init, L1 = 0, L2 = 0, I0 = I_init / 3, I1 = I_init / 3, I2 = I_init / 3)
+initial_values_yaye_version <- 
+  c(S = S_init - I_init, L1 = 0, L2 = 0, I0 = I_init / 3, I1 = I_init / 3, I2 = I_init / 3, cumulative_incidence = 0)
 times <- seq(0, 2e2)
 
 # do the LHS sampling for all parameters and all runs
@@ -82,7 +83,7 @@ colnames(lhs_samples) <- names(uncertainty_params)
 # set stopping condition, based on largest absolute rate of change in compartment sizes being less than a specified value
 tolerance <- 1e-5
 stopping_condition <- function(t, state, parms) {
-  max(abs(unlist(YayeModel(t, state, parms)))) - tolerance
+  max(abs(unlist(YayeModel(t, state, parms))[1:6])) - tolerance
 }
 
 # loop over the requested number of runs
@@ -100,13 +101,22 @@ for (run in seq(n_runs)) {
 
   # yaye version new
   yaye_version <- as.data.frame(lsodar(initial_values_yaye_version, times, YayeModel, params, rootfunc = stopping_condition))
+
+  # find incidence
+  yaye_version$incidence <- c(0, diff(yaye_version$cumulative_incidence) * 1e5)
   
+  # cut out last row because adjusting the integration time mucks up the calculation of the last incidence value
+  yaye_version <- yaye_version[1: nrow(yaye_version) - 1,]
+    
   # run summer version
   summer_version$run_model()
+  
+
 
   # print and report comparison of outputs
-  plot(summer_version$outputs$time, summer_version$outputs$IXinfect_2 * 1e5, 
-       xlab = "Time in years", ylab = "Superspreader prevalence per 100,000")
+  plot(yaye_version$time, yaye_version$incidence, 
+       xlab = "Time in years", ylab = "Overall incidence per 100,000 per year")
+  lines(summer_version$outputs$time, summer_version$outputs$IXinfect_2 * 1e5, "p")
   lines(yaye_version$time, yaye_version$I2 * 1e5, "l", col = "red", lwd = 2)
   writeLines(paste("direct ode-based version, prevalence of I0:", tail(yaye_version$I0, 1) * 1e5, 
                    "per 100,000"))
