@@ -76,6 +76,12 @@ initial_values_yaye_version <-
   c(S = S_init - I_init, L1 = 0, L2 = 0, I0 = I_init / 3, I1 = I_init / 3, I2 = I_init / 3, cumulative_incidence = 0)
 times <- seq(0, 2e2)
 
+# set stopping condition, based on largest absolute rate of change in compartment sizes being less than a specified value
+tolerance <- 1e-5
+stopping_condition <- function(t, state, parms) {
+  max(abs(unlist(YayeModel(t, state, parms))[1:6])) - tolerance
+}
+
 # do the LHS sampling for all parameters and all runs
 lhs_samples <- as.data.frame(maximinLHS(n_runs, length(uncertainty_params)))
 colnames(lhs_samples) <- names(uncertainty_params)
@@ -85,12 +91,6 @@ main_outputs <- data.frame(matrix(
   rep(0, n_runs * (length(uncertainty_params) + 1)), 
   nrow = n_runs,ncol = length(uncertainty_params) + 1))
 colnames(main_outputs) <- c(names(uncertainty_params), "incidence")
-
-# set stopping condition, based on largest absolute rate of change in compartment sizes being less than a specified value
-tolerance <- 1e-5
-stopping_condition <- function(t, state, parms) {
-  max(abs(unlist(YayeModel(t, state, parms))[1:6])) - tolerance
-}
 
 # loop over the requested number of runs
 for (run in seq(n_runs)) {
@@ -135,7 +135,7 @@ for (run in seq(n_runs)) {
   
 }
 
-# plot correlations
+# plot correlations (just for first nine to avoid problems with plots being too big)
 par(mfrow = c(3, 3))
 for (parameter in names(uncertainty_params)[1: 9]) {
   plot(main_outputs[[parameter]], main_outputs$incidence, xlab = "", ylab = "", title(parameter))
