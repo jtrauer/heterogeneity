@@ -116,12 +116,10 @@ for (run in seq(n_runs)) {
   plot(yaye_version$time, yaye_version$incidence,
        xlab = "Time in years", ylab = "Overall incidence per 100,000 per year")
   lines(summer_version$derived_outputs$times, summer_version$derived_outputs$incidence * 1e5, "l", col = "blue")
-  lines(summer_version$outputs$time, summer_version$outputs$IXinfect_2 * 1e5, "p")
-  lines(yaye_version$time, yaye_version$I2 * 1e5, "l", col = "red", lwd = 2)
-  writeLines(paste("direct ode-based version, prevalence of I0:", tail(yaye_version$I0, 1) * 1e5, 
-                   "per 100,000"))
-  writeLines(paste("summer interpretation, prevalence of I0:   ", tail(summer_version$outputs$IXinfect_0, 1) * 1e5, 
-                   "per 100,000"))
+  writeLines(paste("summer interpretation, incidence of I0:   ", tail(summer_version$derived_outputs$incidence, 1) * 1e5, 
+                   "per 100,000 per year"))
+  writeLines(paste("direct ode-based version, incidence of I0:", tail(yaye_version$incidence, 1), 
+                   "per 100,000 per year"))
   writeLines(paste("time to equilibrium:", tail(yaye_version$time, 1), "years"))
 }
 
