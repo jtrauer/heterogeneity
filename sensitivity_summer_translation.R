@@ -68,7 +68,7 @@ uncertainty_params <- list(P_epsilon = c(min = 0.074, max = 0.128),
                            P_h = list(min = 0, max = 0.058))
 
 # user to request number of runs, set model intial conditions and specify integration time
-n_runs <- 5
+n_runs <- 20
 S_init = 1
 I_init = 1e-6
 initial_values = c(S = S_init - I_init, L1 = 0, L2 = 0, I = I_init)  # summer will split the I compartment
@@ -79,6 +79,12 @@ times <- seq(0, 2e2)
 # do the LHS sampling for all parameters and all runs
 lhs_samples <- as.data.frame(maximinLHS(n_runs, length(uncertainty_params)))
 colnames(lhs_samples) <- names(uncertainty_params)
+
+# initialise main outputs
+main_outputs <- data.frame(matrix(
+  rep(0, n_runs * (length(uncertainty_params) + 1)), 
+  nrow = n_runs,ncol = length(uncertainty_params) + 1))
+colnames(main_outputs) <- c(names(uncertainty_params), "incidence")
 
 # set stopping condition, based on largest absolute rate of change in compartment sizes being less than a specified value
 tolerance <- 1e-5
@@ -92,7 +98,9 @@ for (run in seq(n_runs)) {
 
   # use the LHS sample values to determine parameter values and adapt parameters from epidemiological values to model flows
   for (param in names(uncertainty_params)) {
-    params[[param]] <- adjust_lhs_to_range(lhs_samples[[param]][run], param, uncertainty_params)
+    parameter_value <- adjust_lhs_to_range(lhs_samples[[param]][run], param, uncertainty_params)
+    params[[param]] <- parameter_value
+    main_outputs[[param]][run] <- parameter_value
   }
   params <- process_parameters(params)
 
@@ -113,13 +121,24 @@ for (run in seq(n_runs)) {
   summer_version$run_model()
   
   # print and report comparison of outputs
+  par(mfrow = c(1, 1))
   plot(yaye_version$time, yaye_version$incidence,
        xlab = "Time in years", ylab = "Overall incidence per 100,000 per year")
   lines(summer_version$derived_outputs$times, summer_version$derived_outputs$incidence * 1e5, "l", col = "blue")
-  writeLines(paste("summer interpretation, incidence of I0:   ", tail(summer_version$derived_outputs$incidence, 1) * 1e5, 
+  incidence_result <- tail(summer_version$derived_outputs$incidence, 1) * 1e5
+  main_outputs$incidence[run] <- incidence_result
+  writeLines(paste("summer interpretation, incidence of I0:   ", incidence_result,
                    "per 100,000 per year"))
-  writeLines(paste("direct ode-based version, incidence of I0:", tail(yaye_version$incidence, 1), 
+  writeLines(paste("direct ode-based version, incidence of I0:", tail(yaye_version$incidence, 1),
                    "per 100,000 per year"))
   writeLines(paste("time to equilibrium:", tail(yaye_version$time, 1), "years"))
+  
 }
+
+# plot correlations
+par(mfrow = c(3, 3))
+for (parameter in names(uncertainty_params)[1: 9]) {
+  plot(main_outputs[[parameter]], main_outputs$incidence, xlab = "", ylab = "", title(parameter))
+}
+
 
