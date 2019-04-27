@@ -103,7 +103,8 @@ for (run in seq(n_runs)) {
   yaye_version <- as.data.frame(lsodar(initial_values_yaye_version, times, YayeModel, params, rootfunc = stopping_condition))
 
   # find incidence
-  yaye_version$incidence <- c(0, diff(yaye_version$cumulative_incidence) * 1e5)
+  yaye_version$time_diff <- c(0, diff(yaye_version$time))
+  yaye_version$incidence <- c(0, diff(yaye_version$cumulative_incidence) * 1e5) / yaye_version$time_diff
   
   # cut out last row because adjusting the integration time mucks up the calculation of the last incidence value
   yaye_version <- yaye_version[1: nrow(yaye_version) - 1,]
@@ -111,8 +112,6 @@ for (run in seq(n_runs)) {
   # run summer version
   summer_version$run_model()
   
-
-
   # print and report comparison of outputs
   plot(yaye_version$time, yaye_version$incidence, 
        xlab = "Time in years", ylab = "Overall incidence per 100,000 per year")
