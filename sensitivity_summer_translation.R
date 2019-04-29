@@ -38,7 +38,7 @@ process_parameters <- function(parameters) {
   parameters$prop_I0 <- 1 - parameters$prop_I1 - parameters$prop_I2
   
   # case detection parameter
-  parameters$delta <- find_delta_from_cdr(parameters$cdr_b, parameters$gamma + parameters$mu, 1)
+  parameters$delta <- find_delta_from_cdr(parameters$cdr_b, parameters$gamma + parameters$mui0 + parameters$mu, 1)
   parameters
 }
 
