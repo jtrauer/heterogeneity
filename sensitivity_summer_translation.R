@@ -25,13 +25,16 @@ process_parameters <- function(parameters) {
   
   # death and spontaneous recovery-related parameters
   parameters$universal_death_rate <- parameters$mu
+  
+  parameters$mui <- parameters$P_mui / parameters$Time_I
   parameters$mui0 <- parameters$P_mui0 / parameters$Time_I
   parameters$mui1 <- parameters$P_mui1 / parameters$Time_I
   parameters$mui2 <- parameters$P_mui2 / parameters$Time_I
+
   parameters$gamma <- (1 - parameters$P_mui) / parameters$Time_I
-  parameters$gamma0 <- 1 / parameters$Time_I - (parameters$mui0 + parameters$mu + parameters$h)
-  parameters$gamma1 <- 1 / parameters$Time_I - (parameters$mui1 + parameters$mu + parameters$j)
-  parameters$gamma2 <- 1 / parameters$Time_I - (parameters$mui2 + parameters$mu)
+  parameters$gamma0 <- (1 - parameters$P_mui0) / parameters$Time_I
+  parameters$gamma1 <- (1 - parameters$P_mui1) / parameters$Time_I
+  parameters$gamma2 <- (1 - parameters$P_mui2) / parameters$Time_I
 
   # infection-related parameters
   parameters$beta_reinfection <- parameters$beta * parameters$r
