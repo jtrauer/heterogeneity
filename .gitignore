@@ -2,5 +2,5 @@
 .Rhistory
 .RData
 .Ruserdata
-*.csv
-*.jpeg
+.csv
+.jpeg
