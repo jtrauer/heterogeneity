@@ -23,22 +23,27 @@ process_parameters <- function(parameters) {
   parameters$j <- parameters$P_j / parameters$Time_I
   parameters$h <- parameters$P_h / parameters$Time_I
   
-  # death and spontaneous recovery-related parameters
+  # population death parameter needs to be renamed for summer
   parameters$universal_death_rate <- parameters$mu
+  
+  # tb-related death parameters
+  parameters$mui <- parameters$P_mui / parameters$Time_I
   parameters$mui0 <- parameters$P_mui0 / parameters$Time_I
   parameters$mui1 <- parameters$P_mui1 / parameters$Time_I
   parameters$mui2 <- parameters$P_mui2 / parameters$Time_I
+
+  # spontaneous recovery parameters
   parameters$gamma <- (1 - parameters$P_mui) / parameters$Time_I
-  parameters$gamma0 <- 1 / parameters$Time_I - (parameters$mui0 + parameters$mu + parameters$h)
-  parameters$gamma1 <- 1 / parameters$Time_I - (parameters$mui1 + parameters$mu + parameters$j)
-  parameters$gamma2 <- 1 / parameters$Time_I - (parameters$mui2 + parameters$mu)
+  parameters$gamma0 <- (1 - parameters$P_mui0) / parameters$Time_I
+  parameters$gamma1 <- (1 - parameters$P_mui1) / parameters$Time_I
+  parameters$gamma2 <- (1 - parameters$P_mui2) / parameters$Time_I
 
   # infection-related parameters
   parameters$beta_reinfection <- parameters$beta * parameters$r
   parameters$prop_I0 <- 1 - parameters$prop_I1 - parameters$prop_I2
   
   # case detection parameter
-  parameters$delta <- find_delta_from_cdr(parameters$cdr_b, parameters$gamma + parameters$mui0 + parameters$mu, 1)
+  parameters$delta <- parameters$cdr_b / (parameters$Time_I * (1 - parameters$cdr_b))
   parameters
 }
 
@@ -62,13 +67,13 @@ uncertainty_params <- list(P_epsilon = c(min = 0.074, max = 0.128),
                            P_mui0 = list(min = 0.05, max = 0.096),
                            P_mui1 = list(min = 0.05, max = 0.096),
                            P_mui2 = list(min = 0.327, max = 0.787),
-                           beta = list(min = 40, max = 60),
+                           beta = list(min = 60, max = 100),
                            cdr_b = list(min = 0.5, max = 0.8),
                            P_j = list(min = 0, max = 0.058),
                            P_h = list(min = 0, max = 0.058))
 
 # user to request number of runs, set model intial conditions and specify integration time
-n_runs <- 20
+n_runs <- 5
 S_init = 1
 I_init = 1e-6
 initial_values = c(S = S_init - I_init, L1 = 0, L2 = 0, I = I_init)  # summer will split the I compartment
