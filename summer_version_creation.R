@@ -9,7 +9,7 @@ summer_version <- EpiModel$new(times, names(initial_values), as.list(initial_val
                                     c("standard_flows", "gamma", "I", "L2"),
                                     c("standard_flows", "delta", "I", "S"),
                                     c("compartment_death", "mui0", "I")),
-                               infectious_compartment="I", initial_conditions_sum_to_total = FALSE, report_progress = FALSE, reporting_sigfigs = 6,
+                               infectious_compartment="I", initial_conditions_to_total = FALSE, report_progress = FALSE, reporting_sigfigs = 6,
                                birth_approach = "replace_deaths", entry_compartment = "S", equilibrium_stopping_tolerance = tolerance,
                                output_connections = list(incidence = c(from = "", to = "I")))
 
