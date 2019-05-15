@@ -1,6 +1,6 @@
 
 # specification of summer version of model
-summer_version <- EpiModel$new(times, names(initial_values), as.list(initial_values), params,
+summer_version <- EpiModel$new(times, names(initial_values), initial_values, params,
                                list(c("infection_frequency", "beta", "S", "L1"),
                                     c("infection_frequency", "beta_reinfection", "L2", "L1"),
                                     c("standard_flows", "kappa", "L1", "L2"),
